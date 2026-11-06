@@ -1,0 +1,36 @@
+---
+description: Extract every new UI or gameplay piece into a reusable component
+alwaysApply: true
+---
+
+# Reusable components
+
+Every new UI or gameplay piece is its own reusable component. Do not leave one-off markup or behavior inline in a page, scene, or parent.
+
+- One component per file, in its own folder grouped by scope (`src/components/PokemonCard/`).
+- Export a props type above the component. Pass variation in through props (data, callbacks, visual variants). Do not hardcode a single caller, Pokémon, or screen.
+- Co-locate CSS in that folder. Style the component from its own props. Do not write selectors that style child components; pass props into the child and let it style itself.
+- Keep the component under 120 lines. Split a larger piece into smaller reusable components.
+- A component built for one screen must still work on another screen with different props.
+
+```tsx
+// ❌ BAD — one-off markup and a hardcoded Pokémon inside the page
+export function BattleScreen() {
+  return <div className="card">Charmander · Fire</div>
+}
+
+// ✅ GOOD — src/components/PokemonCard/PokemonCard.tsx
+export type PokemonCardProps = {
+  pokemon: Pokemon
+  selected?: boolean
+  onSelect?: (id: PokemonId) => void
+}
+
+export function PokemonCard({ pokemon, selected = false, onSelect }: PokemonCardProps) {
+  return (
+    <button type="button" data-selected={selected} onClick={() => onSelect?.(pokemon.id)}>
+      {pokemon.name}
+    </button>
+  )
+}
+```

@@ -1,0 +1,36 @@
+---
+description: Put shared TypeScript data models in src/data
+alwaysApply: true
+---
+
+# Shared data models
+
+A type used by more than one part of the app lives in `src/data/` as a TypeScript model. Do not copy the same shape into a component, system, or util.
+
+- One domain per file: `src/data/pokemon.ts`, `src/data/move.ts`.
+- Export `type` aliases. This project uses `erasableSyntaxOnly`, so do not use `enum` or other syntax that emits runtime code. Model closed sets as string unions.
+- Import models with `import type` and a `.ts` extension (`verbatimModuleSyntax`, `allowImportingTsExtensions`).
+- A type used by only one component stays next to that component (for example its props type). Move it into `src/data/` as soon as a second module needs it.
+
+```ts
+// src/data/pokemon.ts
+export type PokemonId = string
+
+export type PokemonType = 'fire' | 'water' | 'grass'
+
+export type Pokemon = {
+  id: PokemonId
+  name: string
+  types: readonly PokemonType[]
+}
+```
+
+```ts
+// src/components/PokemonCard/PokemonCard.tsx
+import type { Pokemon, PokemonId } from '../../data/pokemon.ts'
+```
+
+```ts
+// ❌ BAD — a second copy of the shape inside a gameplay module
+type Pokemon = { id: string; name: string }
+```
