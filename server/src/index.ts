@@ -167,6 +167,9 @@ export function startServer(): void {
       const message = parseMessage(data)
       if (!message) return
       applyAction(session, id, message)
+      // Aims and cursors are folded into the 10 Hz snapshot. A full copy per packet
+      // was most of the bandwidth while someone held the vacuum.
+      if (message.type === 'cursor' || message.type === 'vacuum') return
       broadcast(session, sockets)
     })
 
