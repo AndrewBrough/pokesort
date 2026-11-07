@@ -7,6 +7,7 @@ import {
   VACUUM_COST,
   VACUUM_FILTER_COST,
   nextBagCost,
+  nextUnloadCost,
   nextVacuumSizeCost,
   nextVacuumStrengthCost,
   tierUnlockCost,
@@ -116,6 +117,8 @@ export function snapshotFor(
       vacuumStrengthCost: player?.vacuum ? nextVacuumStrengthCost(player.vacuumStrength) : null,
       vacuumFilterCost: player?.vacuumFilter ? null : VACUUM_FILTER_COST,
       vacuumReach: vacuumRadius(player?.vacuumSize ?? 0),
+      unloadSpeed: player?.unloadSpeed ?? 0,
+      unloadCost: nextUnloadCost(player?.unloadSpeed ?? 0),
       shelfHintCost: player?.shelfHint ? null : SHELF_HINT_COST,
     },
   }

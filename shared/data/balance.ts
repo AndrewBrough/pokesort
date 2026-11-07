@@ -98,3 +98,22 @@ export function nextVacuumSizeCost(level: number): number | null {
 export function nextVacuumStrengthCost(level: number): number | null {
   return vacuumStatCost(VACUUM_STRENGTH_BASE_COST, level)
 }
+
+/** One ball leaves the bag per this many milliseconds at unload level 0. */
+export const UNLOAD_BASE_MS = 500
+/** Twenty levels is 5% of the base speed each, so the last level waits 0ms. */
+export const UNLOAD_LEVELS = 20
+export const UNLOAD_SPEED_STEP = 0.05
+/** First purchase matches the first bag upgrade. Later levels step like vacuum size. */
+export const UNLOAD_BASE_COST = 1600
+export const UNLOAD_COST_STEP = 0.5
+
+export function unloadInterval(level: number): number {
+  const clamped = Math.max(0, Math.min(UNLOAD_LEVELS, level))
+  return Math.round(UNLOAD_BASE_MS * (1 - UNLOAD_SPEED_STEP * clamped))
+}
+
+export function nextUnloadCost(level: number): number | null {
+  if (level >= UNLOAD_LEVELS) return null
+  return Math.round(UNLOAD_BASE_COST * (1 + UNLOAD_COST_STEP * level))
+}

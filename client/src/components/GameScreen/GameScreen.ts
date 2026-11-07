@@ -8,6 +8,7 @@ import { mountGameOver, type GameOverHandle } from '../GameOver/GameOver.ts'
 import { mountNoticeBanner, type NoticeBannerHandle } from '../NoticeBanner/NoticeBanner.ts'
 import { mountToolbar, type ToolbarHandle } from '../Toolbar/Toolbar.ts'
 import { mountUpgradeBar, type UpgradeBarHandle } from '../UpgradeBar/UpgradeBar.ts'
+import { screenUpgradeProps } from './screenUpgradeProps.ts'
 
 export type GameScreenHandlers = {
   onDropBatch: () => void
@@ -79,24 +80,7 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
         nextBatchMs: state?.nextBatchMs ?? 0,
         canDrop: connected && state?.status === 'playing',
       })
-      upgrades.update({
-        bagSize: state?.you.bagSize ?? STARTING_BAG,
-        bagCost: state?.you.bagCost ?? null,
-        vacuumCost: state?.you.vacuumCost ?? null,
-        vacuumOwned: state?.you.vacuum ?? false,
-        vacuumSize: state?.you.vacuumSize ?? 0,
-        vacuumStrength: state?.you.vacuumStrength ?? 0,
-        vacuumSizeCost: state?.you.vacuumSizeCost ?? null,
-        vacuumStrengthCost: state?.you.vacuumStrengthCost ?? null,
-        vacuumFilterOwned: state?.you.vacuumFilter ?? false,
-        vacuumFilterCost: state?.you.vacuumFilterCost ?? null,
-        shelfHintOwned: state?.you.shelfHint ?? false,
-        shelfHintCost: state?.you.shelfHintCost ?? null,
-        nextTierName: state?.nextTier?.name ?? null,
-        nextTierCost: state?.nextTier?.cost ?? null,
-        totalValue: state?.totalValue ?? 0,
-        enabled: connected && state?.status === 'playing',
-      })
+      upgrades.update(screenUpgradeProps(state, connected))
       bag.update({
         balls: state?.you.bag ?? [],
         bagSize: state?.you.bagSize ?? STARTING_BAG,

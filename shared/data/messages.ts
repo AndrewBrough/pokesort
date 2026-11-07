@@ -54,6 +54,8 @@ export type PlayerSnapshot = {
   vacuumFilterCost: number | null
   /** Pull radius for the current size level, in world pixels. */
   vacuumReach: number
+  unloadSpeed: number
+  unloadCost: number | null
   shelfHintCost: number | null
 }
 

@@ -7,8 +7,10 @@ export {
   HIT_MIN_SPEED,
   HIT_VOICES,
   STARTING_BAG,
+  UNLOAD_LEVELS,
   VACUUM_COST,
   VACUUM_LEVELS,
   nextBagCost,
   nextBagGain,
+  unloadInterval,
 } from '../../../shared/data/balance.ts'

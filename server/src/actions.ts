@@ -14,11 +14,15 @@ import {
   OVERFLOW_LIMIT_MS,
   VACUUM_AIM_MS,
   SHELF_HINT_COST,
+  SIM_STEP_MS,
+  UNLOAD_LEVELS,
   VACUUM_COST,
   VACUUM_LEVELS,
   VACUUM_FILTER_COST,
+  nextUnloadCost,
   nextVacuumSizeCost,
   nextVacuumStrengthCost,
+  unloadInterval,
   tierUnlockCost,
   vacuumPullSpeed,
   vacuumRadius,
@@ -99,6 +103,8 @@ export function beginRun(session: Session): void {
     player.vacuumSize = 0
     player.vacuumStrength = 0
     player.vacuumFilter = false
+    player.unloadSpeed = 0
+    player.nextUnloadAt = 0
     player.shelfHint = false
     player.vacuumAim = null
     player.toast = null
@@ -268,6 +274,7 @@ export function rememberClient(session: Session, playerId: string): void {
     vacuumSize: player.vacuumSize,
     vacuumStrength: player.vacuumStrength,
     vacuumFilter: player.vacuumFilter,
+    unloadSpeed: player.unloadSpeed,
     shelfHint: player.shelfHint,
   })
 }
@@ -434,6 +441,10 @@ export function applyAction(session: Session, playerId: string, message: ClientM
       toast(session, 'Shelf marks on. Matching shelves light up.', playerId)
       return
     }
+    if (message.upgrade === 'unload') {
+      buyUnload(session, player)
+      return
+    }
     if (message.upgrade === 'vacuumFilter') {
       buyVacuumFilter(session, player)
       return
@@ -459,21 +470,23 @@ export function applyAction(session: Session, playerId: string, message: ClientM
   }
   const shelf = session.shelves[message.shelfIndex]
   if (!shelf?.unlocked) return
-  const matching = player.bag.filter((id) => session.balls.get(id)?.typeIndex === shelf.typeIndex)
-  if (matching.length === 0) {
+  const matching = player.bag.find((id) => session.balls.get(id)?.typeIndex === shelf.typeIndex)
+  const ball = matching ? session.balls.get(matching) : undefined
+  if (!ball) {
     const held = player.bag[0] ? session.balls.get(player.bag[0]) : undefined
     const heldName = held ? ballByIndex(held.typeIndex).shortName : 'Empty bag'
-    toast(session, `${shelfName(shelf)} shelf rejects ${heldName}`, playerId)
+    const text = `${shelfName(shelf)} shelf rejects ${heldName}`
+    if (player.toast?.text === text && player.toast.ttl > 0) return
+    toast(session, text, playerId)
     return
   }
-  for (const id of matching) {
-    const ball = session.balls.get(id)
-    if (!ball) continue
-    let slot = shelf.slots.findIndex((entry) => entry === null)
-    if (slot < 0) break
-    placeOnShelf(session, ball, shelf, slot, playerId)
-    if (shelf.slots.every((entry) => entry !== null)) cashOut(session, shelf)
-  }
+  const slot = shelf.slots.findIndex((entry) => entry === null)
+  if (slot < 0) return
+  const now = Date.now()
+  if (now + SIM_STEP_MS < player.nextUnloadAt) return
+  placeOnShelf(session, ball, shelf, slot, playerId)
+  player.nextUnloadAt = now + unloadInterval(player.unloadSpeed)
+  if (shelf.slots.every((entry) => entry !== null)) cashOut(session, shelf)
 }
 
 function shelfName(shelf: Shelf): string {
@@ -500,9 +513,22 @@ function maxUpgrades(session: Session, player: Player): void {
   player.vacuumSize = VACUUM_LEVELS
   player.vacuumStrength = VACUUM_LEVELS
   player.vacuumFilter = true
+  player.unloadSpeed = UNLOAD_LEVELS
   player.shelfHint = true
   for (const typeIndex of ballUnlockOrder()) unlockTier(session, typeIndex)
   toast(session, 'Upgrades maxed.', player.id)
+}
+
+function buyUnload(session: Session, player: Player): void {
+  const cost = nextUnloadCost(player.unloadSpeed)
+  if (cost === null) return
+  if (session.totalValue < cost) {
+    toast(session, 'Not enough value for unload speed', player.id)
+    return
+  }
+  session.totalValue -= cost
+  player.unloadSpeed += 1
+  toast(session, `Unload speed ${player.unloadSpeed}/${UNLOAD_LEVELS}`, player.id)
 }
 
 function canVacuum(player: Player): boolean {

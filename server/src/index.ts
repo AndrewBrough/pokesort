@@ -170,6 +170,8 @@ export function startServer(): void {
       vacuumSize: saved?.vacuumSize ?? 0,
       vacuumStrength: saved?.vacuumStrength ?? 0,
       vacuumFilter: saved?.vacuumFilter ?? false,
+      unloadSpeed: saved?.unloadSpeed ?? 0,
+      nextUnloadAt: 0,
       shelfHint: saved?.shelfHint ?? false,
       vacuumAim: null,
       cursor: null,

@@ -6,6 +6,7 @@ import { drawMart } from './drawMart.ts'
 import { PlayerCursors, type LocalCursor } from './PlayerCursors/PlayerCursors.ts'
 import { ShelfLayer } from './ShelfLayer/ShelfLayer.ts'
 import { loadBallTextures } from './textures.ts'
+import { UnloadPop, type UnloadPopLaunch } from './UnloadPop/UnloadPop.ts'
 import { VacuumRange } from './VacuumRange/VacuumRange.ts'
 import { VacuumStream } from './VacuumStream/VacuumStream.ts'
 
@@ -26,6 +27,9 @@ export type StageHandle = {
   sync: (state: WorldSnapshot) => void
   ballAt: (x: number, y: number) => string | null
   shelfAt: (x: number, y: number) => number | null
+  flyTarget: (shelfIndex: number) => { x: number; y: number } | null
+  popUnload: (props: UnloadPopLaunch) => void
+  showUnload: (indexes: readonly number[]) => void
   showVacuum: (props: VacuumAimProps) => void
   showSelf: (point: LocalCursor | null) => void
   worldFromEvent: (event: PointerEvent) => { x: number; y: number }
@@ -58,11 +62,14 @@ export async function createStage(
   const balls = new BallLayer(textures)
   const range = new VacuumRange()
   const vacuum = new VacuumStream()
+  const pops = new UnloadPop(textures)
   const cursors = new PlayerCursors()
-  world.addChild(mart, shelves, range, balls, vacuum, cursors)
+  world.addChild(mart, shelves, range, balls, pops, vacuum, cursors)
   app.stage.addChild(world)
   app.ticker.add((ticker) => {
     balls.step(ticker.deltaMS)
+    pops.step(ticker.deltaMS)
+    shelves.setLag(pops.lag())
     onTick(ticker.deltaMS)
     vacuum.step(ticker.deltaMS)
     cursors.step(ticker.deltaMS)
@@ -105,6 +112,13 @@ export async function createStage(
     },
     ballAt: (x, y) => balls.ballAt(x, y),
     shelfAt: (x, y) => shelves.shelfAt(x, y),
+    flyTarget: (shelfIndex) => shelves.flyTarget(shelfIndex),
+    popUnload: (props) => pops.launch(props),
+    showUnload: (indexes) => {
+      const active = new Set<number>(indexes)
+      for (const index of pops.shelves()) active.add(index)
+      shelves.showActive(active)
+    },
     showVacuum: (props) => {
       const targets = props.active
         ? balls.vacuumTargets(props.cursorX, props.cursorY, props.types, props.radius, props.selective)

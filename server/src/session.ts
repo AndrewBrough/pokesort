@@ -40,6 +40,10 @@ export type Player = {
   vacuumStrength: number
   /** Pull only types already in the bag. */
   vacuumFilter: boolean
+  /** Levels of one-ball unload speed. 0 waits half a second. */
+  unloadSpeed: number
+  /** Wall-clock ms before the next shelf ball is allowed. */
+  nextUnloadAt: number
   shelfHint: boolean
   vacuumAim: { x: number; y: number; at: number; match: boolean } | null
   cursor: { x: number; y: number } | null
@@ -52,6 +56,7 @@ export type ClientUpgrades = {
   vacuumSize: number
   vacuumStrength: number
   vacuumFilter: boolean
+  unloadSpeed: number
   shelfHint: boolean
 }
 

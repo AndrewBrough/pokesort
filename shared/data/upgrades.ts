@@ -1,6 +1,6 @@
-import { VACUUM_LEVELS } from './balance.ts'
+import { UNLOAD_LEVELS, VACUUM_LEVELS } from './balance.ts'
 
-export type UpgradeId = 'bag' | 'vacuum' | 'vacuumSize' | 'vacuumStrength' | 'vacuumFilter' | 'tier' | 'hint'
+export type UpgradeId = 'bag' | 'unload' | 'vacuum' | 'vacuumSize' | 'vacuumStrength' | 'vacuumFilter' | 'tier' | 'hint'
 
 export type UpgradeScope = 'individual' | 'team'
 
@@ -17,6 +17,7 @@ export type UpgradeDef = {
 export const UPGRADES: readonly UpgradeDef[] = [
   { id: 'tier', scope: 'team', name: 'Unlock ball', unlocks: [], maxLevel: null },
   { id: 'bag', scope: 'individual', name: 'Bag slot', unlocks: [], maxLevel: null },
+  { id: 'unload', scope: 'individual', name: 'Unload speed', unlocks: [], maxLevel: UNLOAD_LEVELS },
   {
     id: 'vacuum',
     scope: 'individual',

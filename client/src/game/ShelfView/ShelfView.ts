@@ -2,6 +2,8 @@ import { Container, Graphics, Sprite, Text, type Texture } from 'pixi.js'
 import { BALL_SIZE, ballByIndex } from '../../data/ball.ts'
 import { SHELF_CAPACITY, SHELF_H, SHELF_LABEL_H, SHELF_W, SLOT, slotCenter } from '../../data/layout.ts'
 
+const UNLOAD_SCALE = 1.1
+
 export type ShelfViewProps = {
   typeIndex: number
   filled: number
@@ -10,13 +12,18 @@ export type ShelfViewProps = {
 
 export class ShelfView extends Container {
   readonly index: number
+  private readonly originX: number
+  private readonly originY: number
   private readonly namePlate: Text
   private readonly mark: Graphics
   private readonly slots: Sprite[]
+  private shown = 0
 
   constructor(index: number, x: number, y: number, texture: Texture) {
     super()
     this.index = index
+    this.originX = x
+    this.originY = y
     this.position.set(x, y)
     const board = new Graphics()
     board.rect(0, 0, SHELF_W, SHELF_H).fill(0x3b2412)
@@ -47,8 +54,13 @@ export class ShelfView extends Container {
     this.addChild(this.mark)
   }
 
+  get filled(): number {
+    return this.shown
+  }
+
   update(props: ShelfViewProps, texture: Texture): void {
     const ball = ballByIndex(props.typeIndex)
+    this.shown = props.filled
     this.namePlate.text = `${ball.shortName} ${props.filled}/${SHELF_CAPACITY}`
     this.mark.clear()
     if (props.hinted) {
@@ -61,7 +73,22 @@ export class ShelfView extends Container {
     }
   }
 
+  setActive(active: boolean): void {
+    const scale = active ? UNLOAD_SCALE : 1
+    const growX = (SHELF_W * (scale - 1)) / 2
+    const growY = (SHELF_H * (scale - 1)) / 2
+    this.scale.set(scale)
+    this.position.set(this.originX - growX, this.originY - growY)
+  }
+
+  slotPoint(slot: number): { x: number; y: number } {
+    const local = slotCenter(slot)
+    return { x: this.x + local.x * this.scale.x, y: this.y + local.y * this.scale.y }
+  }
+
   hit(x: number, y: number): boolean {
-    return x >= this.x && y >= this.y && x < this.x + SHELF_W && y < this.y + SHELF_H
+    const width = SHELF_W * this.scale.x
+    const height = SHELF_H * this.scale.y
+    return x >= this.x && y >= this.y && x < this.x + width && y < this.y + height
   }
 }

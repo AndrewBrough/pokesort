@@ -1,4 +1,4 @@
-import { VACUUM_LEVELS, nextBagGain } from '../../data/balance.ts'
+import { UNLOAD_LEVELS, VACUUM_LEVELS, nextBagGain } from '../../data/balance.ts'
 import { visibleUpgrades, type UpgradeDef } from '../../data/upgrades.ts'
 import { formatValue } from '../../format.ts'
 import type { UpgradeButtonProps } from '../UpgradeButton/UpgradeButton.ts'
@@ -14,6 +14,8 @@ export type UpgradeBarProps = {
   vacuumStrengthCost: number | null
   vacuumFilterOwned: boolean
   vacuumFilterCost: number | null
+  unloadSpeed: number
+  unloadCost: number | null
   shelfHintOwned: boolean
   shelfHintCost: number | null
   nextTierName: string | null
@@ -75,6 +77,16 @@ function describe(upgrade: UpgradeDef, props: UpgradeBarProps, broke: boolean): 
       `Vacuum strength ${VACUUM_LEVELS}/${VACUUM_LEVELS}`,
     )
     return offer(upgrade, strength.label, strength.disabled)
+  }
+  if (upgrade.id === 'unload') {
+    const speed = priced(
+      broke,
+      props.totalValue,
+      props.unloadCost,
+      `Unload speed ${props.unloadSpeed}/${UNLOAD_LEVELS} ${formatValue(props.unloadCost ?? 0)}`,
+      `Unload speed ${UNLOAD_LEVELS}/${UNLOAD_LEVELS}`,
+    )
+    return offer(upgrade, speed.label, speed.disabled)
   }
   if (upgrade.id === 'vacuumFilter') {
     const filter = priced(
