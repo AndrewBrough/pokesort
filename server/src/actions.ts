@@ -8,11 +8,13 @@ import {
   DROP_SPREAD,
   DROP_WINDOW_MS,
   HIT_VOICES,
+  MAX_BAG,
   STARTING_BAG,
   OVERFLOW_LIMIT_MS,
   VACUUM_AIM_MS,
   SHELF_HINT_COST,
   VACUUM_COST,
+  VACUUM_LEVELS,
   VACUUM_FILTER_COST,
   nextVacuumSizeCost,
   nextVacuumStrengthCost,
@@ -337,6 +339,11 @@ export function applyAction(session: Session, playerId: string, message: ClientM
     session.totalValue += DEV_GRANT
     return
   }
+  if (message.type === 'max') {
+    if (process.env.NODE_ENV === 'production') return
+    maxUpgrades(session, player)
+    return
+  }
   if (message.type === 'restart') {
     beginRun(session)
     toast(session, 'New shipment. Shelves restocked.', null)
@@ -483,6 +490,17 @@ function levelsOf(player: Player): UpgradeLevels {
 
 function upgradeOffered(player: Player, id: UpgradeId): boolean {
   return visibleUpgrades(levelsOf(player)).some((upgrade) => upgrade.id === id)
+}
+
+function maxUpgrades(session: Session, player: Player): void {
+  player.bagSize = MAX_BAG
+  player.vacuum = true
+  player.vacuumSize = VACUUM_LEVELS
+  player.vacuumStrength = VACUUM_LEVELS
+  player.vacuumFilter = true
+  player.shelfHint = true
+  for (const typeIndex of ballUnlockOrder()) unlockTier(session, typeIndex)
+  toast(session, 'Upgrades maxed.', player.id)
 }
 
 function canVacuum(player: Player): boolean {

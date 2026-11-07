@@ -92,6 +92,7 @@ export type ClientMessage =
   | { type: 'dropBatch' }
   | { type: 'upgrade'; upgrade: UpgradeId }
   | { type: 'grant' }
+  | { type: 'max' }
   | { type: 'restart' }
 
 export type ServerMessage =

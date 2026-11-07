@@ -15,6 +15,7 @@ export type GameScreenHandlers = {
   onRestart: () => void
   onDropBall: (ballId: string) => void
   onGrant: () => void
+  onMax: () => void
   muted: boolean
   onMute: (muted: boolean) => void
 }
@@ -51,10 +52,12 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
     muted: handlers.muted,
     onMute: handlers.onMute,
   })
+  const dev = import.meta.env.DEV
   const upgrades: UpgradeBarHandle = mountUpgradeBar(
     upgradeSlot,
     handlers.onUpgrade,
-    import.meta.env.DEV ? handlers.onGrant : null,
+    dev ? handlers.onGrant : null,
+    dev ? handlers.onMax : null,
   )
   const bag: BagPanelHandle = mountBagPanel(bagSlot, handlers.onDropBall)
   const notice: NoticeBannerHandle = mountNoticeBanner(noticeSlot)

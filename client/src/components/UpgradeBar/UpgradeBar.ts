@@ -15,31 +15,31 @@ export function mountUpgradeBar(
   parent: HTMLElement,
   onUpgrade: (upgrade: UpgradeId) => void,
   onGrant: (() => void) | null,
+  onMax: (() => void) | null,
 ): UpgradeBarHandle {
   const root = document.createElement('section')
   root.className = 'upgrade-bar'
   parent.append(root)
   const buttons = new Map<UpgradeId, UpgradeButtonHandle>()
-  let grant: UpgradeButtonHandle | null = null
+  const dev: UpgradeButtonHandle[] = []
   let shown = ''
+
+  const mountDev = (onClick: () => void, label: string) => {
+    dev.push(mountUpgradeButton(root, onClick, { kind: 'Team Upgrade', label, disabled: false }))
+  }
 
   const rebuild = (props: UpgradeBarProps) => {
     for (const button of buttons.values()) button.destroy()
     buttons.clear()
-    grant?.destroy()
-    grant = null
+    for (const button of dev) button.destroy()
+    dev.length = 0
     root.replaceChildren()
     const offers = upgradeOffers(props)
     for (const offer of offers) {
       buttons.set(offer.id, mountUpgradeButton(root, () => onUpgrade(offer.id), offer))
     }
-    if (onGrant) {
-      grant = mountUpgradeButton(root, onGrant, {
-        kind: 'Team Upgrade',
-        label: `Add ${DEV_GRANT}`,
-        disabled: false,
-      })
-    }
+    if (onGrant) mountDev(onGrant, `Add ${DEV_GRANT}`)
+    if (onMax) mountDev(onMax, 'Max upgrades')
     shown = offers.map((offer) => offer.id).join(',')
   }
 
@@ -55,7 +55,7 @@ export function mountUpgradeBar(
     },
     destroy() {
       for (const button of buttons.values()) button.destroy()
-      grant?.destroy()
+      for (const button of dev) button.destroy()
       root.remove()
     },
   }

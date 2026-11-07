@@ -27,6 +27,7 @@ export async function mountGame(root: HTMLElement): Promise<void> {
     onRestart: () => send({ type: 'restart' }),
     onDropBall: (ballId) => send({ type: 'drop', ballId }),
     onGrant: () => send({ type: 'grant' }),
+    onMax: () => send({ type: 'max' }),
     muted: hitSounds.muted(),
     onMute: (muted) => hitSounds.setMuted(muted),
   })

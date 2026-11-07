@@ -49,7 +49,8 @@ function parseMessage(raw: RawData): ClientMessage | null {
     type === 'deposit' ||
     type === 'drop' ||
     type === 'upgrade' ||
-    type === 'grant'
+    type === 'grant' ||
+    type === 'max'
   ) {
     return value as ClientMessage
   }
