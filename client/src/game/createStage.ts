@@ -4,6 +4,7 @@ import type { WorldSnapshot } from '../data/messages.ts'
 import { BallLayer } from './BallLayer/BallLayer.ts'
 import { BinFullness } from './BinFullness/BinFullness.ts'
 import { drawMart } from './drawMart.ts'
+import { PlayerCursors, type LocalCursor } from './PlayerCursors/PlayerCursors.ts'
 import { ShelfLayer } from './ShelfLayer/ShelfLayer.ts'
 import { loadBallTextures } from './textures.ts'
 import { VacuumRange } from './VacuumRange/VacuumRange.ts'
@@ -25,6 +26,7 @@ export type StageHandle = {
   ballAt: (x: number, y: number) => string | null
   shelfAt: (x: number, y: number) => number | null
   showVacuum: (props: VacuumAimProps) => void
+  showSelf: (point: LocalCursor | null) => void
   worldFromEvent: (event: PointerEvent) => { x: number; y: number }
   destroy: () => void
 }
@@ -56,12 +58,14 @@ export async function createStage(
   const range = new VacuumRange()
   const vacuum = new VacuumStream()
   const fullness = new BinFullness()
-  world.addChild(mart, shelves, range, balls, vacuum, fullness)
+  const cursors = new PlayerCursors()
+  world.addChild(mart, shelves, range, balls, vacuum, fullness, cursors)
   app.stage.addChild(world)
   app.ticker.add((ticker) => {
     balls.step(ticker.deltaMS)
     onTick(ticker.deltaMS)
     vacuum.step(ticker.deltaMS)
+    cursors.step(ticker.deltaMS)
   })
 
   const resize = (width: number, height: number) => {
@@ -95,6 +99,7 @@ export async function createStage(
         percent: Math.round(state.fullness * 100),
         overflowing: state.fullness > 1,
       })
+      cursors.sync({ cursors: state.cursors })
     },
     ballAt: (x, y) => balls.ballAt(x, y),
     shelfAt: (x, y) => shelves.shelfAt(x, y),
@@ -110,6 +115,7 @@ export async function createStage(
         targets,
       })
     },
+    showSelf: (point) => cursors.showSelf(point),
     worldFromEvent,
     destroy: () => {
       app.destroy(true)

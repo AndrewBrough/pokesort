@@ -22,6 +22,12 @@ import { visibleUpgrades, type UpgradeId, type UpgradeLevels } from '../../share
 import { stepBin, type VacuumPull } from './physics.ts'
 import type { Ball, Player, Session, Shelf } from './session.ts'
 
+function placeCursor(player: Player, x: number, y: number): void {
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return
+  if (Math.abs(x) > 10000 || Math.abs(y) > 10000) return
+  player.cursor = { x, y }
+}
+
 function toast(session: Session, text: string, playerId: string | null): void {
   const next = { id: ++session.toastSeq, text, ttl: 2800 }
   if (playerId) {
@@ -276,6 +282,10 @@ export function applyAction(session: Session, playerId: string, message: ClientM
     toast(session, 'New shipment. Shelves restocked.', null)
     return
   }
+  if (message.type === 'cursor') {
+    placeCursor(player, message.x, message.y)
+    return
+  }
   if (!playing(session)) return
 
   if (message.type === 'pickup') {
@@ -286,6 +296,7 @@ export function applyAction(session: Session, playerId: string, message: ClientM
   }
 
   if (message.type === 'vacuum') {
+    placeCursor(player, message.x, message.y)
     if (!player.vacuum || player.bag.length === 0 || player.bag.length >= player.bagSize) {
       player.vacuumAim = null
       return

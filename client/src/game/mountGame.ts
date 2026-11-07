@@ -8,6 +8,9 @@ export async function mountGame(root: HTMLElement): Promise<void> {
   let snapshot: WorldSnapshot | null = null
   let vacuumArmed = false
   let holdMs = 0
+  let pointerSeen = false
+  let sinceCursor = 0
+  let sentCursor = { x: Number.NaN, y: Number.NaN }
   let pointer = { x: BIN.x + BIN.w / 2, y: BIN.y + BIN.h / 2 }
   let stage: StageHandle | null = null
   const insideBin = (point: { x: number; y: number }) =>
@@ -43,7 +46,16 @@ export async function mountGame(root: HTMLElement): Promise<void> {
       holdMs += dtMs
       if (holdMs >= 50) {
         holdMs = 0
+        sentCursor = { x: pointer.x, y: pointer.y }
         send({ type: 'vacuum', x: pointer.x, y: pointer.y })
+      }
+    } else if (pointerSeen) {
+      sinceCursor += dtMs
+      const moved = pointer.x !== sentCursor.x || pointer.y !== sentCursor.y
+      if (moved && sinceCursor >= 50) {
+        sinceCursor = 0
+        sentCursor = { x: pointer.x, y: pointer.y }
+        send({ type: 'cursor', x: pointer.x, y: pointer.y })
       }
     }
     stage?.showVacuum({
@@ -54,6 +66,7 @@ export async function mountGame(root: HTMLElement): Promise<void> {
       types: new Set(you?.bag.map((ball) => ball.typeIndex) ?? []),
       radius: you?.vacuumReach ?? 0,
     })
+    stage?.showSelf(pointerSeen ? pointer : null)
   })
 
   const resize = () => stage?.resize(screen.stage.clientWidth, screen.stage.clientHeight)
@@ -69,6 +82,7 @@ export async function mountGame(root: HTMLElement): Promise<void> {
       // Untrusted or already-released pointers still need to resolve the click.
     }
     pointer = stage?.worldFromEvent(event) ?? pointer
+    pointerSeen = true
     const ballId = stage?.ballAt(pointer.x, pointer.y)
     if (ballId) {
       send({ type: 'pickup', ballId })
@@ -87,6 +101,7 @@ export async function mountGame(root: HTMLElement): Promise<void> {
   })
   stage.canvas.addEventListener('pointermove', (event) => {
     pointer = stage?.worldFromEvent(event) ?? pointer
+    pointerSeen = true
   })
   const release = () => {
     vacuumArmed = false

@@ -15,6 +15,15 @@ import type { ToastSnapshot, WorldSnapshot } from '../../shared/data/messages.ts
 import type { Session } from './session.ts'
 import { binCount } from './actions.ts'
 
+function otherCursors(session: Session, playerId: string): { id: string; x: number; y: number }[] {
+  const cursors = []
+  for (const player of session.players.values()) {
+    if (player.id === playerId || !player.cursor) continue
+    cursors.push({ id: player.id, x: Math.round(player.cursor.x), y: Math.round(player.cursor.y) })
+  }
+  return cursors
+}
+
 function toastOf(session: Session, playerId: string): ToastSnapshot | null {
   const player = session.players.get(playerId)
   const personal = player?.toast ?? null
@@ -55,6 +64,7 @@ export function snapshotFor(session: Session, playerId: string): WorldSnapshot {
       filled: shelf.slots.reduce((count, id) => count + (id ? 1 : 0), 0),
     })),
     bin,
+    cursors: otherCursors(session, playerId),
     you: {
       bag: (player?.bag ?? []).flatMap((id) => {
         const ball = session.balls.get(id)

@@ -38,6 +38,7 @@ export type Player = {
   vacuumStrength: number
   shelfHint: boolean
   vacuumAim: { x: number; y: number; at: number } | null
+  cursor: { x: number; y: number } | null
   toast: Toast | null
 }
 

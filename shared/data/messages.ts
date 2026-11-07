@@ -26,6 +26,12 @@ export type ToastSnapshot = {
   text: string
 }
 
+export type CursorSnapshot = {
+  id: string
+  x: number
+  y: number
+}
+
 export type PlayerSnapshot = {
   bag: BagBallSnapshot[]
   bagSize: number
@@ -59,11 +65,13 @@ export type WorldSnapshot = {
   nextTier: NextTierSnapshot | null
   shelves: ShelfSnapshot[]
   bin: BinBallSnapshot[]
+  cursors: CursorSnapshot[]
   you: PlayerSnapshot
 }
 
 export type ClientMessage =
   | { type: 'pickup'; ballId: string }
+  | { type: 'cursor'; x: number; y: number }
   | { type: 'vacuum'; x: number; y: number }
   | { type: 'deposit'; shelfIndex: number }
   | { type: 'drop'; ballId: string }

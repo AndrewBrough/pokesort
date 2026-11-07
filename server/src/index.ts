@@ -43,6 +43,7 @@ function parseMessage(raw: RawData): ClientMessage | null {
     type === 'dropBatch' ||
     type === 'restart' ||
     type === 'pickup' ||
+    type === 'cursor' ||
     type === 'vacuum' ||
     type === 'deposit' ||
     type === 'drop' ||
@@ -150,6 +151,7 @@ export function startServer(): void {
       vacuumStrength: saved?.vacuumStrength ?? 0,
       shelfHint: saved?.shelfHint ?? false,
       vacuumAim: null,
+      cursor: null,
       toast: null,
     })
     if (!session.live) {
