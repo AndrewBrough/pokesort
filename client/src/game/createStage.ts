@@ -6,10 +6,12 @@ import { BinFullness } from './BinFullness/BinFullness.ts'
 import { drawMart } from './drawMart.ts'
 import { ShelfLayer } from './ShelfLayer/ShelfLayer.ts'
 import { loadBallTextures } from './textures.ts'
+import { VacuumRange } from './VacuumRange/VacuumRange.ts'
 import { VacuumStream } from './VacuumStream/VacuumStream.ts'
 
 export type VacuumAimProps = {
   active: boolean
+  rangeVisible: boolean
   cursorX: number
   cursorY: number
   types: ReadonlySet<number>
@@ -50,9 +52,10 @@ export async function createStage(
   drawMart(mart)
   const shelves = new ShelfLayer(textures)
   const balls = new BallLayer(textures)
+  const range = new VacuumRange()
   const vacuum = new VacuumStream()
   const fullness = new BinFullness()
-  world.addChild(mart, shelves, balls, vacuum, fullness)
+  world.addChild(mart, shelves, range, balls, vacuum, fullness)
   app.stage.addChild(world)
   app.ticker.add((ticker) => {
     balls.step(ticker.deltaMS)
@@ -95,11 +98,13 @@ export async function createStage(
     ballAt: (x, y) => balls.ballAt(x, y),
     shelfAt: (x, y) => shelves.shelfAt(x, y),
     showVacuum: (props) => {
+      const targets = props.active ? balls.vacuumTargets(props.cursorX, props.cursorY, props.types) : []
+      range.update({ visible: props.rangeVisible, x: props.cursorX, y: props.cursorY })
       vacuum.update({
         active: props.active,
         cursorX: props.cursorX,
         cursorY: props.cursorY,
-        targets: props.active ? balls.vacuumTargets(props.cursorX, props.cursorY, props.types) : [],
+        targets,
       })
     },
     worldFromEvent,

@@ -1,3 +1,5 @@
+import { BALL_SIZE } from './ball.ts'
+
 export const BIN_CAPACITY = 2000
 export const OVERFLOW_LIMIT_MS = 2500
 export const SIM_STEP_MS = 50
@@ -6,12 +8,10 @@ export const BALL_RADIUS = 15
 export const VACUUM_RADIUS = 120
 /** How fast a pulled ball slides toward the pointer, in pixels per second. */
 export const VACUUM_PULL_SPEED = 360
-/** Pointer is on the ball sprite once it is inside this half-size. */
-export const VACUUM_CATCH_RADIUS = 16
+/** Pointer must sit inside the 32×32 ball before it is picked up. */
+export const VACUUM_CATCH_RADIUS = BALL_SIZE / 2
 /** Drop a held aim if the client stops sending it. */
 export const VACUUM_AIM_MS = 200
-/** Particle streams are drawn for this many nearest matching balls. */
-export const VACUUM_STREAM_BALLS = 4
 export const VACUUM_COST = 3500
 /** Outlines shelves that match a ball in your bag. */
 export const SHELF_HINT_COST = 2500

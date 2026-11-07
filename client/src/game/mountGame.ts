@@ -10,6 +10,8 @@ export async function mountGame(root: HTMLElement): Promise<void> {
   let holdMs = 0
   let pointer = { x: BIN.x + BIN.w / 2, y: BIN.y + BIN.h / 2 }
   let stage: StageHandle | null = null
+  const insideBin = (point: { x: number; y: number }) =>
+    point.x >= BIN.x && point.x <= BIN.x + BIN.w && point.y >= BIN.y && point.y <= BIN.y + BIN.h
 
   const send = (message: ClientMessage) => connection.send(message)
   const screen = mountGameScreen(root, {
@@ -49,6 +51,7 @@ export async function mountGame(root: HTMLElement): Promise<void> {
     }
     stage?.showVacuum({
       active: pulling,
+      rangeVisible: !!you?.vacuum && snapshot?.status === 'playing' && insideBin(pointer),
       cursorX: pointer.x,
       cursorY: pointer.y,
       types: new Set(you?.bag.map((ball) => ball.typeIndex) ?? []),
@@ -60,9 +63,6 @@ export async function mountGame(root: HTMLElement): Promise<void> {
   if (snapshot) stage.sync(snapshot)
   const observer = new ResizeObserver(resize)
   observer.observe(screen.stage)
-
-  const insideBin = (point: { x: number; y: number }) =>
-    point.x >= BIN.x && point.x <= BIN.x + BIN.w && point.y >= BIN.y && point.y <= BIN.y + BIN.h
 
   stage.canvas.addEventListener('pointerdown', (event) => {
     try {

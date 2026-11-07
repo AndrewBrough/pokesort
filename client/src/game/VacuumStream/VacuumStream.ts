@@ -12,8 +12,8 @@ type Pixel = {
   sprite: Sprite
 }
 
-const PIXELS_PER_BALL = 4
-const SPEED = 280
+const PIXELS_PER_BALL = 10
+const SPEED = 1000
 
 function pixelTexture(): Texture {
   const canvas = document.createElement('canvas')

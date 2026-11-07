@@ -7,6 +7,5 @@ export {
   STARTING_BAG,
   VACUUM_COST,
   VACUUM_RADIUS,
-  VACUUM_STREAM_BALLS,
   nextBagCost,
 } from '../../../shared/data/balance.ts'

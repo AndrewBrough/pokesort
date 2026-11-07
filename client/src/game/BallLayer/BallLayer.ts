@@ -1,5 +1,5 @@
 import { Container, Sprite, type Texture } from 'pixi.js'
-import { VACUUM_RADIUS, VACUUM_STREAM_BALLS } from '../../data/balance.ts'
+import { VACUUM_RADIUS } from '../../data/balance.ts'
 import type { BinBallSnapshot } from '../../data/messages.ts'
 
 type BallSprite = Sprite & { targetX: number; targetY: number; typeIndex: number }
@@ -73,8 +73,7 @@ export class BallLayer extends Container {
       if (dist > reach) continue
       found.push({ x: sprite.x, y: sprite.y, dist })
     }
-    found.sort((a, b) => a.dist - b.dist)
-    return found.slice(0, VACUUM_STREAM_BALLS)
+    return found
   }
 
   ballAt(x: number, y: number): string | null {

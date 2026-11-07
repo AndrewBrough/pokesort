@@ -129,6 +129,12 @@ export function stepBin(
   for (const ball of pulled) {
     const pull = nearestPull(ball, pulls)
     if (!pull) continue
+    if (overlapsPointer(ball, pull)) {
+      caught.push({ id: ball.id, playerId: pull.playerId })
+      ball.vx = 0
+      ball.vy = 0
+      continue
+    }
     const dx = pull.x - ball.x
     const dy = pull.y - ball.y
     const dist = Math.hypot(dx, dy)
@@ -136,11 +142,6 @@ export function stepBin(
       const step = Math.min(VACUUM_PULL_SPEED * dt, dist)
       ball.x += (dx / dist) * step
       ball.y += (dy / dist) * step
-    }
-    if (overlapsPointer(ball, pull)) {
-      caught.push({ id: ball.id, playerId: pull.playerId })
-      ball.vx = 0
-      ball.vy = 0
     }
   }
 
