@@ -1,6 +1,8 @@
 import './Toolbar.css'
 import { BIN_CAPACITY } from '../../data/balance.ts'
 import { formatClock, formatSeconds, formatValue } from '../../format.ts'
+import { mountHowToPlay } from '../HowToPlay/HowToPlay.ts'
+import { mountInfoButton } from '../InfoButton/InfoButton.ts'
 
 export type ToolbarProps = {
   connected: boolean
@@ -82,7 +84,9 @@ export function mountToolbar(
     showMute()
     mute.onMute(muted)
   })
+  const help = mountHowToPlay(parent)
   root.append(wallet, bin, batch, ...(drop ? [drop] : []), ...(reset ? [reset] : []), spacer, players, clock, muteButton)
+  const info = mountInfoButton(root, { onClick: help.open })
   parent.append(root)
 
   return {
@@ -100,6 +104,8 @@ export function mountToolbar(
       clock.textContent = formatClock(props.sessionMs)
     },
     destroy() {
+      info.destroy()
+      help.destroy()
       root.remove()
     },
   }

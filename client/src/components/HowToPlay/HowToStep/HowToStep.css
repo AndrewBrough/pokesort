@@ -1,0 +1,27 @@
+.how-to-step {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 10px;
+  row-gap: 2px;
+  margin: 0;
+}
+
+.how-to-step__index {
+  grid-row: 1 / span 2;
+  align-self: start;
+  color: #c4a36a;
+  font-weight: 700;
+}
+
+.how-to-step__title,
+.how-to-step__detail {
+  margin: 0;
+}
+
+.how-to-step__title {
+  font-weight: 700;
+}
+
+.how-to-step__detail {
+  color: #f0d7a8;
+}
