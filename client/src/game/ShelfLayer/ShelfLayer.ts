@@ -12,7 +12,7 @@ export class ShelfLayer extends Container {
     this.textures = textures
   }
 
-  sync(shelves: readonly ShelfSnapshot[]): void {
+  sync(shelves: readonly ShelfSnapshot[], hintTypes: ReadonlySet<number>): void {
     const unlocked = new Set<number>()
     for (const shelf of shelves) {
       if (!shelf.unlocked) continue
@@ -26,7 +26,10 @@ export class ShelfLayer extends Container {
         this.views.set(shelf.index, view)
         this.addChild(view)
       }
-      view.update({ typeIndex: shelf.typeIndex, filled: shelf.filled }, texture)
+      view.update(
+        { typeIndex: shelf.typeIndex, filled: shelf.filled, hinted: hintTypes.has(shelf.typeIndex) },
+        texture,
+      )
     }
     for (const [index, view] of this.views) {
       if (unlocked.has(index)) continue

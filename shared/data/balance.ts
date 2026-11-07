@@ -13,6 +13,8 @@ export const VACUUM_AIM_MS = 200
 /** Particle streams are drawn for this many nearest matching balls. */
 export const VACUUM_STREAM_BALLS = 4
 export const VACUUM_COST = 3500
+/** Outlines shelves that match a ball in your bag. */
+export const SHELF_HINT_COST = 2500
 
 /** Every unlocked ball type drops this many balls each batch. */
 export const DROP_RATE = 10
@@ -26,11 +28,11 @@ export const DEV_GRANT = 1000000
 
 export const STARTING_BAG = 3
 export const MAX_BAG = 24
-export const BAG_COSTS = [800, 2000, 4500, 9000, 16000, 32000, 64000, 128000, 256000, 512000, 1024000, 2048000, 4096000, 8192000] as const
+export const BAG_BASE_COST = 800
 
 export function nextBagCost(bagSize: number): number | null {
   if (bagSize >= MAX_BAG) return null
-  return BAG_COSTS[bagSize - 1] ?? null
+  return BAG_BASE_COST * 2 ** (bagSize - 1)
 }
 
 export function tierUnlockCost(ballValue: number): number {

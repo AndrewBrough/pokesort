@@ -5,6 +5,8 @@ export type UpgradeBarProps = {
   bagCost: number | null
   vacuumCost: number | null
   vacuumOwned: boolean
+  shelfHintOwned: boolean
+  shelfHintCost: number | null
   nextTierName: string | null
   nextTierCost: number | null
   totalValue: number
@@ -12,6 +14,7 @@ export type UpgradeBarProps = {
   onBag: () => void
   onVacuum: () => void
   onTier: () => void
+  onHint: () => void
 }
 
 export type UpgradeBarHandle = {
@@ -24,6 +27,7 @@ export function mountUpgradeBar(
   onBag: () => void,
   onVacuum: () => void,
   onTier: () => void,
+  onHint: () => void,
 ): UpgradeBarHandle {
   const root = document.createElement('section')
   root.className = 'upgrade-bar'
@@ -39,7 +43,11 @@ export function mountUpgradeBar(
   vacuum.type = 'button'
   vacuum.className = 'upgrade-bar__button'
   vacuum.addEventListener('click', onVacuum)
-  root.append(tier, bag, vacuum)
+  const hint = document.createElement('button')
+  hint.type = 'button'
+  hint.className = 'upgrade-bar__button'
+  hint.addEventListener('click', onHint)
+  root.append(tier, bag, vacuum, hint)
   parent.append(root)
 
   return {
@@ -64,6 +72,13 @@ export function mountUpgradeBar(
       } else {
         vacuum.textContent = `Vacuum ${formatValue(props.vacuumCost ?? 0)}`
         vacuum.disabled = !props.enabled || props.totalValue < (props.vacuumCost ?? Number.POSITIVE_INFINITY)
+      }
+      if (props.shelfHintOwned) {
+        hint.textContent = 'Shelves marked'
+        hint.disabled = true
+      } else {
+        hint.textContent = `Mark shelves ${formatValue(props.shelfHintCost ?? 0)}`
+        hint.disabled = !props.enabled || props.totalValue < (props.shelfHintCost ?? Number.POSITIVE_INFINITY)
       }
     },
     destroy() {

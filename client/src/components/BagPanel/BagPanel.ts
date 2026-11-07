@@ -46,7 +46,10 @@ export function mountBagPanel(parent: HTMLElement, onDrop: (ballId: string) => v
         const column = ball.typeIndex % SHEET_COLUMNS
         const row = Math.floor(ball.typeIndex / SHEET_COLUMNS)
         sprite.style.backgroundPosition = `${-column * BALL_SIZE}px ${-row * BALL_SIZE}px`
-        button.append(sprite)
+        const name = document.createElement('span')
+        name.className = 'bag-panel__name'
+        name.textContent = type.shortName
+        button.append(sprite, name)
         button.addEventListener('click', () => onDrop(ball.id))
         slots.append(button)
       }

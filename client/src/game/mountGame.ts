@@ -17,6 +17,7 @@ export async function mountGame(root: HTMLElement): Promise<void> {
     onBag: () => send({ type: 'upgrade', upgrade: 'bag' }),
     onVacuum: () => send({ type: 'upgrade', upgrade: 'vacuum' }),
     onTier: () => send({ type: 'upgrade', upgrade: 'tier' }),
+    onHint: () => send({ type: 'upgrade', upgrade: 'hint' }),
     onRestart: () => send({ type: 'restart' }),
     onDropBall: (ballId) => send({ type: 'drop', ballId }),
     onGrant: () => send({ type: 'grant' }),

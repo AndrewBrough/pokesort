@@ -32,6 +32,7 @@ export type Player = {
   bag: string[]
   bagSize: number
   vacuum: boolean
+  shelfHint: boolean
   vacuumAim: { x: number; y: number; at: number } | null
   toast: Toast | null
 }

@@ -28,8 +28,10 @@ export type PlayerSnapshot = {
   bag: BagBallSnapshot[]
   bagSize: number
   vacuum: boolean
+  shelfHint: boolean
   bagCost: number | null
   vacuumCost: number | null
+  shelfHintCost: number | null
 }
 
 export type NextTierSnapshot = {
@@ -58,7 +60,7 @@ export type ClientMessage =
   | { type: 'deposit'; shelfIndex: number }
   | { type: 'drop'; ballId: string }
   | { type: 'dropBatch' }
-  | { type: 'upgrade'; upgrade: 'bag' | 'vacuum' | 'tier' }
+  | { type: 'upgrade'; upgrade: 'bag' | 'vacuum' | 'tier' | 'hint' }
   | { type: 'grant' }
   | { type: 'restart' }
 

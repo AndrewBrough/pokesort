@@ -13,6 +13,7 @@ export type GameScreenHandlers = {
   onBag: () => void
   onVacuum: () => void
   onTier: () => void
+  onHint: () => void
   onRestart: () => void
   onDropBall: (ballId: string) => void
   onGrant: () => void
@@ -55,6 +56,7 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
     handlers.onBag,
     handlers.onVacuum,
     handlers.onTier,
+    handlers.onHint,
   )
   const bag: BagPanelHandle = mountBagPanel(bagSlot, handlers.onDropBall)
   const notice: NoticeBannerHandle = mountNoticeBanner(noticeSlot)
@@ -79,6 +81,8 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
         bagCost: state?.you.bagCost ?? null,
         vacuumCost: state?.you.vacuumCost ?? null,
         vacuumOwned: state?.you.vacuum ?? false,
+        shelfHintOwned: state?.you.shelfHint ?? false,
+        shelfHintCost: state?.you.shelfHintCost ?? null,
         nextTierName: state?.nextTier?.name ?? null,
         nextTierCost: state?.nextTier?.cost ?? null,
         totalValue: state?.totalValue ?? 0,
@@ -86,6 +90,7 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
         onBag: handlers.onBag,
         onVacuum: handlers.onVacuum,
         onTier: handlers.onTier,
+        onHint: handlers.onHint,
       })
       bag.update({
         balls: state?.you.bag ?? [],

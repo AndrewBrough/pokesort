@@ -1,14 +1,14 @@
 import { ballByIndex, ballUnlockOrder } from '../../shared/data/ball.ts'
 import {
-  BAG_COSTS,
+  nextBagCost,
   BATCH_INTERVAL_MS,
   BIN_CAPACITY,
   DEV_GRANT,
   DROP_RATE,
-  MAX_BAG,
   STARTING_BAG,
   OVERFLOW_LIMIT_MS,
   VACUUM_AIM_MS,
+  SHELF_HINT_COST,
   VACUUM_COST,
   tierUnlockCost,
 } from '../../shared/data/balance.ts'
@@ -63,6 +63,7 @@ export function beginRun(session: Session): void {
     player.bag = []
     player.bagSize = STARTING_BAG
     player.vacuum = false
+    player.shelfHint = false
     player.vacuumAim = null
     player.toast = null
   }
@@ -285,8 +286,8 @@ export function applyAction(session: Session, playerId: string, message: ClientM
 
   if (message.type === 'upgrade') {
     if (message.upgrade === 'bag') {
-      const cost = BAG_COSTS[player.bagSize - 1]
-      if (player.bagSize >= MAX_BAG || cost === undefined) return
+      const cost = nextBagCost(player.bagSize)
+      if (cost === null) return
       if (session.totalValue < cost) {
         toast(session, 'Not enough value for your bag slot', playerId)
         return
@@ -308,6 +309,17 @@ export function applyAction(session: Session, playerId: string, message: ClientM
       session.totalValue -= cost
       unlockTier(session, nextIndex)
       toast(session, `${next.name} unlocked. ${DROP_RATE} drop each batch.`, null)
+      return
+    }
+    if (message.upgrade === 'hint') {
+      if (player.shelfHint) return
+      if (session.totalValue < SHELF_HINT_COST) {
+        toast(session, 'Not enough value to mark shelves', playerId)
+        return
+      }
+      session.totalValue -= SHELF_HINT_COST
+      player.shelfHint = true
+      toast(session, 'Shelf marks on. Matching shelves light up.', playerId)
       return
     }
     if (message.upgrade !== 'vacuum' || player.vacuum) return

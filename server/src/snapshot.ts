@@ -1,5 +1,5 @@
 import { ballByIndex, ballUnlockOrder } from '../../shared/data/ball.ts'
-import { BATCH_INTERVAL_MS, BIN_CAPACITY, STARTING_BAG, VACUUM_COST, nextBagCost, tierUnlockCost } from '../../shared/data/balance.ts'
+import { BATCH_INTERVAL_MS, BIN_CAPACITY, SHELF_HINT_COST, STARTING_BAG, VACUUM_COST, nextBagCost, tierUnlockCost } from '../../shared/data/balance.ts'
 import type { ToastSnapshot, WorldSnapshot } from '../../shared/data/messages.ts'
 import type { Session } from './session.ts'
 import { binCount } from './actions.ts'
@@ -51,8 +51,10 @@ export function snapshotFor(session: Session, playerId: string): WorldSnapshot {
       }),
       bagSize: player?.bagSize ?? STARTING_BAG,
       vacuum: player?.vacuum ?? false,
+      shelfHint: player?.shelfHint ?? false,
       bagCost: nextBagCost(player?.bagSize ?? STARTING_BAG),
       vacuumCost: player?.vacuum ? null : VACUUM_COST,
+      shelfHintCost: player?.shelfHint ? null : SHELF_HINT_COST,
     },
   }
 }

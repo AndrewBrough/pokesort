@@ -5,11 +5,13 @@ import { SHELF_CAPACITY, SHELF_H, SHELF_W, slotCenter } from '../../data/layout.
 export type ShelfViewProps = {
   typeIndex: number
   filled: number
+  hinted: boolean
 }
 
 export class ShelfView extends Container {
   readonly index: number
   private readonly namePlate: Text
+  private readonly mark: Graphics
   private readonly slots: Sprite[]
 
   constructor(index: number, x: number, y: number, texture: Texture) {
@@ -30,6 +32,7 @@ export class ShelfView extends Container {
     this.namePlate.anchor.set(0.5, 0)
     this.namePlate.position.set(SHELF_W / 2, 3)
     this.addChild(this.namePlate)
+    this.mark = new Graphics()
     this.slots = Array.from({ length: SHELF_CAPACITY }, (_, slot) => {
       const sprite = new Sprite(texture)
       sprite.anchor.set(0.5)
@@ -41,11 +44,16 @@ export class ShelfView extends Container {
       this.addChild(sprite)
       return sprite
     })
+    this.addChild(this.mark)
   }
 
   update(props: ShelfViewProps, texture: Texture): void {
     const ball = ballByIndex(props.typeIndex)
     this.namePlate.text = `${ball.shortName} ${props.filled}/${SHELF_CAPACITY}`
+    this.mark.clear()
+    if (props.hinted) {
+      this.mark.rect(1, 1, SHELF_W - 2, SHELF_H - 2).stroke({ width: 4, color: ball.accent })
+    }
     for (let slot = 0; slot < this.slots.length; slot++) {
       const sprite = this.slots[slot]
       sprite.texture = texture

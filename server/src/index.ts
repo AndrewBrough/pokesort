@@ -132,6 +132,7 @@ export function startServer(): void {
       bag: [],
       bagSize: STARTING_BAG,
       vacuum: false,
+      shelfHint: false,
       vacuumAim: null,
       toast: null,
     })

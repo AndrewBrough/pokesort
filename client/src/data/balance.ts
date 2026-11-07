@@ -1,5 +1,5 @@
 export {
-  BAG_COSTS,
+  BAG_BASE_COST,
   BALL_RADIUS,
   BIN_CAPACITY,
   MAX_BAG,

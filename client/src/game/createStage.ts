@@ -82,7 +82,10 @@ export async function createStage(
     canvas: app.canvas,
     resize,
     sync: (state) => {
-      shelves.sync(state.shelves)
+      const hintTypes = state.you.shelfHint
+        ? new Set(state.you.bag.map((ball) => ball.typeIndex))
+        : new Set<number>()
+      shelves.sync(state.shelves, hintTypes)
       balls.sync(state.bin)
       fullness.update({
         percent: Math.round(state.fullness * 100),
