@@ -11,6 +11,8 @@ export type UpgradeBarProps = {
   vacuumStrength: number
   vacuumSizeCost: number | null
   vacuumStrengthCost: number | null
+  vacuumFilterOwned: boolean
+  vacuumFilterCost: number | null
   shelfHintOwned: boolean
   shelfHintCost: number | null
   nextTierName: string | null
@@ -72,6 +74,16 @@ function describe(upgrade: UpgradeDef, props: UpgradeBarProps, broke: boolean): 
     )
     return offer(upgrade, strength.label, strength.disabled)
   }
+  if (upgrade.id === 'vacuumFilter') {
+    const filter = priced(
+      broke,
+      props.totalValue,
+      props.vacuumFilterCost,
+      `Match bag ${formatValue(props.vacuumFilterCost ?? 0)}`,
+      'Matching your bag',
+    )
+    return offer(upgrade, filter.label, filter.disabled)
+  }
   const hint = priced(
     broke,
     props.totalValue,
@@ -87,6 +99,7 @@ export function upgradeOffers(props: UpgradeBarProps): UpgradeOffer[] {
     vacuum: props.vacuumOwned ? 1 : 0,
     vacuumSize: props.vacuumSize,
     vacuumStrength: props.vacuumStrength,
+    vacuumFilter: props.vacuumFilterOwned ? 1 : 0,
     hint: props.shelfHintOwned ? 1 : 0,
   }
   const broke = !props.enabled

@@ -38,8 +38,10 @@ export type Player = {
   vacuum: boolean
   vacuumSize: number
   vacuumStrength: number
+  /** Pull only types already in the bag. */
+  vacuumFilter: boolean
   shelfHint: boolean
-  vacuumAim: { x: number; y: number; at: number } | null
+  vacuumAim: { x: number; y: number; at: number; match: boolean } | null
   cursor: { x: number; y: number } | null
   toast: Toast | null
 }
@@ -49,6 +51,7 @@ export type ClientUpgrades = {
   vacuum: boolean
   vacuumSize: number
   vacuumStrength: number
+  vacuumFilter: boolean
   shelfHint: boolean
 }
 

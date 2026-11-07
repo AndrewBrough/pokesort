@@ -16,6 +16,8 @@ export type VacuumAimProps = {
   cursorX: number
   cursorY: number
   types: ReadonlySet<number>
+  /** When set, the stream only reaches types already in the bag. */
+  selective: boolean
   radius: number
 }
 
@@ -111,7 +113,7 @@ export async function createStage(
     shelfAt: (x, y) => shelves.shelfAt(x, y),
     showVacuum: (props) => {
       const targets = props.active
-        ? balls.vacuumTargets(props.cursorX, props.cursorY, props.types, props.radius)
+        ? balls.vacuumTargets(props.cursorX, props.cursorY, props.types, props.radius, props.selective)
         : []
       range.update({ visible: props.rangeVisible, x: props.cursorX, y: props.cursorY, radius: props.radius })
       vacuum.update({

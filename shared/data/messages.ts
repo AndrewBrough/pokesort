@@ -44,11 +44,14 @@ export type PlayerSnapshot = {
   vacuum: boolean
   vacuumSize: number
   vacuumStrength: number
+  /** When true, the vacuum only pulls types already in the bag. */
+  vacuumFilter: boolean
   shelfHint: boolean
   bagCost: number | null
   vacuumCost: number | null
   vacuumSizeCost: number | null
   vacuumStrengthCost: number | null
+  vacuumFilterCost: number | null
   /** Pull radius for the current size level, in world pixels. */
   vacuumReach: number
   shelfHintCost: number | null
@@ -83,7 +86,7 @@ export type WorldSnapshot = {
 export type ClientMessage =
   | { type: 'pickup'; ballId: string }
   | { type: 'cursor'; x: number; y: number }
-  | { type: 'vacuum'; x: number; y: number }
+  | { type: 'vacuum'; x: number; y: number; match: boolean }
   | { type: 'deposit'; shelfIndex: number }
   | { type: 'drop'; ballId: string }
   | { type: 'dropBatch' }

@@ -4,6 +4,7 @@ import { BIN } from '../data/layout.ts'
 import type { ClientMessage, WorldSnapshot } from '../data/messages.ts'
 import { connectSocket } from '../net/socket.ts'
 import { createStage, type StageHandle } from './createStage.ts'
+import { savedMatch } from '../components/BagPanel/BagMatch/BagMatch.ts'
 import { createHitSounds } from './HitSounds/HitSounds.ts'
 
 export async function mountGame(root: HTMLElement): Promise<void> {
@@ -51,13 +52,14 @@ export async function mountGame(root: HTMLElement): Promise<void> {
     fps?.sample({ dtMs })
     const you = snapshot?.you
     const bagFull = !you || you.bag.length >= you.bagSize
-    const pulling = vacuumArmed && !!you?.vacuum && snapshot?.status === 'playing' && !bagFull && you.bag.length > 0
+    const selective = !!you?.vacuumFilter && savedMatch() && you.bag.length > 0
+    const pulling = vacuumArmed && !!you?.vacuum && snapshot?.status === 'playing' && !bagFull
     if (pulling) {
       holdMs += dtMs
       if (holdMs >= 50) {
         holdMs = 0
         sentCursor = { x: pointer.x, y: pointer.y }
-        send({ type: 'vacuum', x: pointer.x, y: pointer.y })
+        send({ type: 'vacuum', x: pointer.x, y: pointer.y, match: savedMatch() })
       }
     } else if (pointerSeen) {
       sinceCursor += dtMs
@@ -74,6 +76,7 @@ export async function mountGame(root: HTMLElement): Promise<void> {
       cursorX: pointer.x,
       cursorY: pointer.y,
       types: new Set(you?.bag.map((ball) => ball.typeIndex) ?? []),
+      selective,
       radius: you?.vacuumReach ?? 0,
     })
     stage?.showSelf(pointerSeen ? pointer : null)

@@ -2,10 +2,12 @@ import './BagPanel.css'
 import type { BagBallSnapshot } from '../../data/messages.ts'
 import { ballByIndex } from '../../data/ball.ts'
 import { mountBagCount } from './BagCount/BagCount.ts'
+import { mountBagMatch, type BagMatchHandle } from './BagMatch/BagMatch.ts'
 
 export type BagPanelProps = {
   balls: readonly BagBallSnapshot[]
   bagSize: number
+  matchOwned: boolean
   onDrop: (ballId: string) => void
 }
 
@@ -41,11 +43,13 @@ export function mountBagPanel(parent: HTMLElement, onDrop: (ballId: string) => v
   const counts = document.createElement('div')
   counts.className = 'bag-panel__counts'
   root.append(title, counts)
+  const match: BagMatchHandle = mountBagMatch(root)
   parent.append(root)
 
   return {
     update(props) {
       title.textContent = `Bag ${props.balls.length}/${props.bagSize}`
+      match.update({ visible: props.matchOwned })
       counts.replaceChildren()
       for (const stack of stacksOf(props.balls)) {
         mountBagCount(counts, {
@@ -56,6 +60,7 @@ export function mountBagPanel(parent: HTMLElement, onDrop: (ballId: string) => v
       }
     },
     destroy() {
+      match.destroy()
       root.remove()
     },
   }

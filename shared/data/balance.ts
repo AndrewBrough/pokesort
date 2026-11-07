@@ -22,6 +22,8 @@ export const HIT_MIN_SPEED = 30
 /** Loudest hits kept per snapshot, and the most clacks playing at once. */
 export const HIT_VOICES = 10
 export const VACUUM_COST = 3500
+/** After the vacuum is owned. Restricts it to types already in the bag. */
+export const VACUUM_FILTER_COST = 50_000
 export const VACUUM_SIZE_BASE_COST = 1600
 export const VACUUM_STRENGTH_BASE_COST = 1800
 const VACUUM_STAT_COST_STEP = 0.5

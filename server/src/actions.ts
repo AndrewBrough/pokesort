@@ -13,6 +13,7 @@ import {
   VACUUM_AIM_MS,
   SHELF_HINT_COST,
   VACUUM_COST,
+  VACUUM_FILTER_COST,
   nextVacuumSizeCost,
   nextVacuumStrengthCost,
   tierUnlockCost,
@@ -94,6 +95,7 @@ export function beginRun(session: Session): void {
     player.vacuum = false
     player.vacuumSize = 0
     player.vacuumStrength = 0
+    player.vacuumFilter = false
     player.shelfHint = false
     player.vacuumAim = null
     player.toast = null
@@ -262,6 +264,7 @@ export function rememberClient(session: Session, playerId: string): void {
     vacuum: player.vacuum,
     vacuumSize: player.vacuumSize,
     vacuumStrength: player.vacuumStrength,
+    vacuumFilter: player.vacuumFilter,
     shelfHint: player.shelfHint,
   })
 }
@@ -288,18 +291,22 @@ function vacuumPulls(session: Session): VacuumPull[] {
       player.vacuumAim = null
       continue
     }
-    if (player.bag.length === 0 || player.bag.length >= player.bagSize) continue
+    if (!canVacuum(player)) continue
+    const selective = aim.match && player.bag.length > 0
     const types = new Set<number>()
-    for (const id of player.bag) {
-      const typeIndex = session.balls.get(id)?.typeIndex
-      if (typeIndex !== undefined) types.add(typeIndex)
+    if (selective) {
+      for (const id of player.bag) {
+        const typeIndex = session.balls.get(id)?.typeIndex
+        if (typeIndex !== undefined) types.add(typeIndex)
+      }
+      if (types.size === 0) continue
     }
-    if (types.size === 0) continue
     pulls.push({
       playerId: player.id,
       x: aim.x,
       y: aim.y,
       types,
+      selective,
       radius: vacuumRadius(player.vacuumSize),
       speed: vacuumPullSpeed(player.vacuumStrength),
     })
@@ -350,11 +357,16 @@ export function applyAction(session: Session, playerId: string, message: ClientM
 
   if (message.type === 'vacuum') {
     placeCursor(player, message.x, message.y)
-    if (!player.vacuum || player.bag.length === 0 || player.bag.length >= player.bagSize) {
+    if (!canVacuum(player)) {
       player.vacuumAim = null
       return
     }
-    player.vacuumAim = { x: message.x, y: message.y, at: session.sessionMs }
+    player.vacuumAim = {
+      x: message.x,
+      y: message.y,
+      at: session.sessionMs,
+      match: player.vacuumFilter && message.match === true,
+    }
     return
   }
 
@@ -413,6 +425,10 @@ export function applyAction(session: Session, playerId: string, message: ClientM
       toast(session, 'Shelf marks on. Matching shelves light up.', playerId)
       return
     }
+    if (message.upgrade === 'vacuumFilter') {
+      buyVacuumFilter(session, player)
+      return
+    }
     if (message.upgrade === 'vacuumSize' || message.upgrade === 'vacuumStrength') {
       buyVacuumStat(session, player, message.upgrade)
       return
@@ -424,7 +440,7 @@ export function applyAction(session: Session, playerId: string, message: ClientM
     }
     session.totalValue -= VACUUM_COST
     player.vacuum = true
-    toast(session, 'Vacuum online. Size and strength are ready.', playerId)
+    toast(session, 'Vacuum online. It pulls every ball.', playerId)
     return
   }
 
@@ -460,12 +476,28 @@ function levelsOf(player: Player): UpgradeLevels {
     vacuum: player.vacuum ? 1 : 0,
     vacuumSize: player.vacuumSize,
     vacuumStrength: player.vacuumStrength,
+    vacuumFilter: player.vacuumFilter ? 1 : 0,
     hint: player.shelfHint ? 1 : 0,
   }
 }
 
 function upgradeOffered(player: Player, id: UpgradeId): boolean {
   return visibleUpgrades(levelsOf(player)).some((upgrade) => upgrade.id === id)
+}
+
+function canVacuum(player: Player): boolean {
+  return player.vacuum && player.bag.length < player.bagSize
+}
+
+function buyVacuumFilter(session: Session, player: Player): void {
+  if (!upgradeOffered(player, 'vacuumFilter') || player.vacuumFilter) return
+  if (session.totalValue < VACUUM_FILTER_COST) {
+    toast(session, 'Not enough value to match your bag', player.id)
+    return
+  }
+  session.totalValue -= VACUUM_FILTER_COST
+  player.vacuumFilter = true
+  toast(session, 'Match bag is on. An empty bag still pulls any ball.', player.id)
 }
 
 function buyVacuumStat(session: Session, player: Player, upgrade: 'vacuumSize' | 'vacuumStrength'): void {

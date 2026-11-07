@@ -69,11 +69,17 @@ export class BallLayer extends Container {
     }
   }
 
-  vacuumTargets(x: number, y: number, types: ReadonlySet<number>, radius: number): VacuumTarget[] {
+  vacuumTargets(
+    x: number,
+    y: number,
+    types: ReadonlySet<number>,
+    radius: number,
+    selective: boolean,
+  ): VacuumTarget[] {
     const reach = radius * radius
     const found: { x: number; y: number; dist: number }[] = []
     for (const sprite of this.sprites.values()) {
-      if (!types.has(sprite.typeIndex)) continue
+      if (selective && !types.has(sprite.typeIndex)) continue
       const dx = sprite.x - x
       const dy = sprite.y - y
       const dist = dx * dx + dy * dy

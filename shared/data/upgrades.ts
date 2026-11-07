@@ -1,6 +1,6 @@
 import { VACUUM_LEVELS } from './balance.ts'
 
-export type UpgradeId = 'bag' | 'vacuum' | 'vacuumSize' | 'vacuumStrength' | 'tier' | 'hint'
+export type UpgradeId = 'bag' | 'vacuum' | 'vacuumSize' | 'vacuumStrength' | 'vacuumFilter' | 'tier' | 'hint'
 
 export type UpgradeScope = 'individual' | 'team'
 
@@ -21,7 +21,7 @@ export const UPGRADES: readonly UpgradeDef[] = [
     id: 'vacuum',
     scope: 'individual',
     name: 'Vacuum',
-    unlocks: ['vacuumSize', 'vacuumStrength'],
+    unlocks: ['vacuumSize', 'vacuumStrength', 'vacuumFilter'],
     maxLevel: 1,
   },
   {
@@ -38,6 +38,7 @@ export const UPGRADES: readonly UpgradeDef[] = [
     unlocks: [],
     maxLevel: VACUUM_LEVELS,
   },
+  { id: 'vacuumFilter', scope: 'individual', name: 'Match bag', unlocks: [], maxLevel: 1 },
   { id: 'hint', scope: 'individual', name: 'Mark shelves', unlocks: [], maxLevel: 1 },
 ]
 
@@ -46,6 +47,7 @@ export type UpgradeLevels = {
   vacuum: number
   vacuumSize: number
   vacuumStrength: number
+  vacuumFilter: number
   hint: number
 }
 
@@ -53,6 +55,7 @@ export function upgradeLevel(id: UpgradeId, levels: UpgradeLevels): number {
   if (id === 'vacuum') return levels.vacuum
   if (id === 'vacuumSize') return levels.vacuumSize
   if (id === 'vacuumStrength') return levels.vacuumStrength
+  if (id === 'vacuumFilter') return levels.vacuumFilter
   if (id === 'hint') return levels.hint
   return 0
 }

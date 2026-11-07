@@ -7,7 +7,10 @@ export type VacuumPull = {
   playerId: string
   x: number
   y: number
+  /** Types already in the bag. Ignored unless `selective` is set. */
   types: ReadonlySet<number>
+  /** Owned match-bag upgrade. Otherwise every ball in range is pulled. */
+  selective: boolean
   radius: number
   speed: number
 }
@@ -63,7 +66,7 @@ function nearestPull(ball: Ball, pulls: readonly VacuumPull[]): VacuumPull | nul
   let best: VacuumPull | null = null
   let bestDist = Number.POSITIVE_INFINITY
   for (const pull of pulls) {
-    if (!pull.types.has(ball.typeIndex)) continue
+    if (pull.selective && !pull.types.has(ball.typeIndex)) continue
     const dx = pull.x - ball.x
     const dy = pull.y - ball.y
     const dist = dx * dx + dy * dy

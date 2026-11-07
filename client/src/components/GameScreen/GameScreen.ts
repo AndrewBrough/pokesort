@@ -83,6 +83,8 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
         vacuumStrength: state?.you.vacuumStrength ?? 0,
         vacuumSizeCost: state?.you.vacuumSizeCost ?? null,
         vacuumStrengthCost: state?.you.vacuumStrengthCost ?? null,
+        vacuumFilterOwned: state?.you.vacuumFilter ?? false,
+        vacuumFilterCost: state?.you.vacuumFilterCost ?? null,
         shelfHintOwned: state?.you.shelfHint ?? false,
         shelfHintCost: state?.you.shelfHintCost ?? null,
         nextTierName: state?.nextTier?.name ?? null,
@@ -93,6 +95,7 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
       bag.update({
         balls: state?.you.bag ?? [],
         bagSize: state?.you.bagSize ?? STARTING_BAG,
+        matchOwned: state?.you.vacuumFilter ?? false,
         onDrop: handlers.onDropBall,
       })
       notice.update(state?.toast ? { token: String(state.toast.id), text: state.toast.text } : null)
