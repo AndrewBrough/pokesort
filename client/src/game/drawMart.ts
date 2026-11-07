@@ -1,12 +1,25 @@
 import type { Graphics } from 'pixi.js'
-import { BIN, WORLD_H, WORLD_W } from '../data/layout.ts'
+import { BIN } from '../data/layout.ts'
 
-export function drawMart(graphics: Graphics): void {
-  const tile = 40
-  for (let y = 0; y < WORLD_H; y += tile) {
-    for (let x = 0; x < WORLD_W; x += tile) {
-      const alt = (x / tile + y / tile) % 2 === 0
-      graphics.rect(x, y, tile, tile).fill(alt ? 0xc4a36a : 0xb5925c)
+export type MartView = {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+const TILE = 40
+
+export function drawMart(graphics: Graphics, view: MartView): void {
+  graphics.clear()
+  const x0 = Math.floor(view.x / TILE) * TILE
+  const y0 = Math.floor(view.y / TILE) * TILE
+  const x1 = view.x + view.width + TILE
+  const y1 = view.y + view.height + TILE
+  for (let y = y0; y < y1; y += TILE) {
+    for (let x = x0; x < x1; x += TILE) {
+      const alt = (Math.floor(x / TILE) + Math.floor(y / TILE)) % 2 === 0
+      graphics.rect(x, y, TILE, TILE).fill(alt ? 0xc4a36a : 0xb5925c)
     }
   }
   const rim = 10

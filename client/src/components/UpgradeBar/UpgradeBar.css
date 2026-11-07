@@ -3,4 +3,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  pointer-events: auto;
 }

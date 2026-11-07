@@ -6,6 +6,7 @@
   min-width: 0;
   gap: 4px;
   color: #f6e7c1;
+  pointer-events: auto;
 }
 
 .bag-panel__title {

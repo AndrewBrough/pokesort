@@ -52,7 +52,7 @@ export async function createStage(
   const world = new Container()
   const textures = await loadBallTextures()
   const mart = new Graphics()
-  drawMart(mart)
+  drawMart(mart, { x: 0, y: 0, width: WORLD_W, height: WORLD_H })
   const shelves = new ShelfLayer(textures)
   const balls = new BallLayer(textures)
   const range = new VacuumRange()
@@ -74,6 +74,12 @@ export async function createStage(
     const scale = Math.min(width / WORLD_W, height / WORLD_H)
     world.scale.set(scale)
     world.position.set((width - WORLD_W * scale) / 2, (height - WORLD_H * scale) / 2)
+    drawMart(mart, {
+      x: -world.position.x / scale,
+      y: -world.position.y / scale,
+      width: width / scale,
+      height: height / scale,
+    })
   }
 
   const worldFromEvent = (event: PointerEvent) => {
