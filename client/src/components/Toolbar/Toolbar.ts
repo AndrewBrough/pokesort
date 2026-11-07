@@ -13,12 +13,21 @@ export type ToolbarProps = {
   onDropBatch: () => void
 }
 
+export type ToolbarMuteProps = {
+  muted: boolean
+  onMute: (muted: boolean) => void
+}
+
 export type ToolbarHandle = {
   update: (props: ToolbarProps) => void
   destroy: () => void
 }
 
-export function mountToolbar(parent: HTMLElement, onDropBatch: () => void): ToolbarHandle {
+export function mountToolbar(
+  parent: HTMLElement,
+  onDropBatch: () => void,
+  mute: ToolbarMuteProps,
+): ToolbarHandle {
   const root = document.createElement('header')
   root.className = 'toolbar'
   const value = document.createElement('p')
@@ -43,7 +52,22 @@ export function mountToolbar(parent: HTMLElement, onDropBatch: () => void): Tool
   players.className = 'toolbar__players'
   const clock = document.createElement('p')
   clock.className = 'toolbar__clock'
-  root.append(value, meter, fullness, batch, drop, spacer, players, clock)
+  const muteButton = document.createElement('button')
+  muteButton.type = 'button'
+  muteButton.className = 'toolbar__mute'
+  let muted = mute.muted
+  const showMute = (): void => {
+    muteButton.textContent = muted ? 'Unmute' : 'Mute'
+    muteButton.setAttribute('aria-pressed', muted ? 'true' : 'false')
+    muteButton.setAttribute('aria-label', muted ? 'Unmute sound' : 'Mute sound')
+  }
+  showMute()
+  muteButton.addEventListener('click', () => {
+    muted = !muted
+    showMute()
+    mute.onMute(muted)
+  })
+  root.append(value, meter, fullness, batch, drop, spacer, players, clock, muteButton)
   parent.append(root)
 
   return {

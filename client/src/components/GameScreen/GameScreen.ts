@@ -15,6 +15,8 @@ export type GameScreenHandlers = {
   onRestart: () => void
   onDropBall: (ballId: string) => void
   onGrant: () => void
+  muted: boolean
+  onMute: (muted: boolean) => void
 }
 
 export type GameScreenHandle = {
@@ -45,7 +47,10 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
   root.append(toolbarSlot, stage, dock)
   parent.append(root)
 
-  const toolbar: ToolbarHandle = mountToolbar(toolbarSlot, handlers.onDropBatch)
+  const toolbar: ToolbarHandle = mountToolbar(toolbarSlot, handlers.onDropBatch, {
+    muted: handlers.muted,
+    onMute: handlers.onMute,
+  })
   const upgrades: UpgradeBarHandle = mountUpgradeBar(
     upgradeSlot,
     handlers.onUpgrade,

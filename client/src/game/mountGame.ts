@@ -19,14 +19,16 @@ export async function mountGame(root: HTMLElement): Promise<void> {
     point.x >= BIN.x && point.x <= BIN.x + BIN.w && point.y >= BIN.y && point.y <= BIN.y + BIN.h
 
   const send = (message: ClientMessage) => connection.send(message)
+  const hitSounds = createHitSounds()
   const screen = mountGameScreen(root, {
     onDropBatch: () => send({ type: 'dropBatch' }),
     onUpgrade: (upgrade) => send({ type: 'upgrade', upgrade }),
     onRestart: () => send({ type: 'restart' }),
     onDropBall: (ballId) => send({ type: 'drop', ballId }),
     onGrant: () => send({ type: 'grant' }),
+    muted: hitSounds.muted(),
+    onMute: (muted) => hitSounds.setMuted(muted),
   })
-  const hitSounds = createHitSounds()
   const fps: FpsCounterHandle | null = import.meta.env.DEV
     ? (await import('../components/FpsCounter/FpsCounter.ts')).mountFpsCounter(screen.stage)
     : null
