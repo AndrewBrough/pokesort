@@ -143,7 +143,17 @@ export function startServer(): void {
     void serveStatic(req, res)
   })
 
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' })
+  const wss = new WebSocketServer({
+    server: httpServer,
+    path: '/ws',
+    // Repeated JSON keys in each snapshot compress well. Level 1 keeps the
+    // droplet cheap, and no context takeover avoids a zlib window per player.
+    perMessageDeflate: {
+      zlibDeflateOptions: { level: 1 },
+      serverNoContextTakeover: true,
+      clientNoContextTakeover: true,
+    },
+  })
   wss.on('connection', (socket, request) => {
     const clientKey = clientKeyFrom(request)
     const saved = upgradesFor(session, clientKey)

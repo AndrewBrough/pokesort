@@ -1,6 +1,7 @@
+import type { FpsCounterHandle } from '../components/FpsCounter/FpsCounter.ts'
+import { mountGameScreen } from '../components/GameScreen/GameScreen.ts'
 import { BIN } from '../data/layout.ts'
 import type { ClientMessage, WorldSnapshot } from '../data/messages.ts'
-import { mountGameScreen } from '../components/GameScreen/GameScreen.ts'
 import { connectSocket } from '../net/socket.ts'
 import { createStage, type StageHandle } from './createStage.ts'
 
@@ -25,6 +26,10 @@ export async function mountGame(root: HTMLElement): Promise<void> {
     onGrant: () => send({ type: 'grant' }),
   })
 
+  const fps: FpsCounterHandle | null = import.meta.env.DEV
+    ? (await import('../components/FpsCounter/FpsCounter.ts')).mountFpsCounter(screen.stage)
+    : null
+
   const connection = connectSocket(
     (message) => {
       if (message.type === 'state') {
@@ -39,6 +44,7 @@ export async function mountGame(root: HTMLElement): Promise<void> {
   )
 
   stage = await createStage(screen.stage, (dtMs) => {
+    fps?.sample({ dtMs })
     const you = snapshot?.you
     const bagFull = !you || you.bag.length >= you.bagSize
     const pulling = vacuumArmed && !!you?.vacuum && snapshot?.status === 'playing' && !bagFull && you.bag.length > 0
