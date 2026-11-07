@@ -5,6 +5,8 @@ import {
   BIN_CAPACITY,
   DEV_GRANT,
   DROP_RATE,
+  DROP_SPREAD,
+  DROP_WINDOW_MS,
   HIT_VOICES,
   STARTING_BAG,
   OVERFLOW_LIMIT_MS,
@@ -98,16 +100,19 @@ export function beginRun(session: Session): void {
   }
   session.unlockedTypes = []
   session.hits = []
+  session.drops = []
   const first = ballUnlockOrder()[0]
   if (first !== undefined) unlockTier(session, first)
   spawnDrop(session)
 }
 
 function tossFromCenter(ball: Ball): void {
+  const marginX = (BIN.w * (1 - DROP_SPREAD)) / 2
+  const marginY = (BIN.h * (1 - DROP_SPREAD)) / 2
+  ball.x = BIN.x + marginX + Math.random() * (BIN.w - marginX * 2)
+  ball.y = BIN.y + marginY + Math.random() * (BIN.h - marginY * 2)
   const angle = Math.random() * Math.PI * 2
   const speed = 220 + Math.random() * 160
-  ball.x = BIN.x + BIN.w / 2 + Math.cos(angle) * 8
-  ball.y = BIN.y + BIN.h / 2 + Math.sin(angle) * 8
   ball.vx = Math.cos(angle) * speed
   ball.vy = Math.sin(angle) * speed
   ball.outsideMs = 0
@@ -132,10 +137,34 @@ function spawnOne(session: Session, typeIndex: number): void {
   session.balls.set(id, ball)
 }
 
-/** Drops DROP_RATE balls of every unlocked type. */
+function releaseDrops(session: Session): void {
+  if (session.drops.length === 0) return
+  const now = session.sessionMs
+  const waiting: Session['drops'] = []
+  for (const drop of session.drops) {
+    if (drop.at <= now) spawnOne(session, drop.typeIndex)
+    else waiting.push(drop)
+  }
+  session.drops = waiting
+}
+
+/** Drops DROP_RATE balls of every unlocked type, scattered across the bin over DROP_WINDOW_MS. */
 export function spawnDrop(session: Session): void {
+  const order: number[] = []
   for (const typeIndex of session.unlockedTypes) {
-    for (let i = 0; i < DROP_RATE; i++) spawnOne(session, typeIndex)
+    for (let i = 0; i < DROP_RATE; i++) order.push(typeIndex)
+  }
+  for (let i = order.length - 1; i > 0; i--) {
+    const swap = Math.floor(Math.random() * (i + 1))
+    const typeIndex = order[i]
+    order[i] = order[swap]
+    order[swap] = typeIndex
+  }
+  const start = session.sessionMs
+  for (let i = 0; i < order.length; i++) {
+    const at = order.length === 1 ? start : start + (i / (order.length - 1)) * DROP_WINDOW_MS
+    if (at <= start) spawnOne(session, order[i])
+    else session.drops.push({ typeIndex: order[i], at })
   }
 }
 
@@ -193,6 +222,7 @@ export function tick(session: Session, dtMs: number): void {
   if (session.players.size === 0 || session.status !== 'playing') return
   session.sessionMs += dtMs
   session.batchMs += dtMs
+  releaseDrops(session)
   const count = binCount(session)
   const fullness = count / BIN_CAPACITY
   if (fullness > 1) session.overflowMs += dtMs

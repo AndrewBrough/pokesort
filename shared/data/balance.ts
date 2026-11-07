@@ -18,7 +18,7 @@ export const VACUUM_CATCH_RADIUS = BALL_SIZE / 2
 /** Drop a held aim if the client stops sending it. */
 export const VACUUM_AIM_MS = 200
 /** Ball-on-ball hits slower than this (px/s) stay silent. */
-export const HIT_MIN_SPEED = 140
+export const HIT_MIN_SPEED = 60
 /** Loudest hits kept per snapshot, and the most clacks playing at once. */
 export const HIT_VOICES = 5
 export const VACUUM_COST = 3500
@@ -31,6 +31,10 @@ export const SHELF_HINT_COST = 2500
 /** Every unlocked ball type drops this many balls each batch. */
 export const DROP_RATE = 10
 export const BATCH_INTERVAL_MS = 14_000
+/** Share of the bin a batch is scattered across. */
+export const DROP_SPREAD = 0.025
+/** A batch finishes appearing within this long. */
+export const DROP_WINDOW_MS = 1500
 
 /** Price of the next tier is its ball value times this factor. */
 export const TIER_COST_FACTOR = 6

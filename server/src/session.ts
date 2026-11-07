@@ -73,6 +73,8 @@ export type Session = {
   clients: Map<string, ClientUpgrades>
   /** Loud ball-on-ball hits waiting for the next snapshot. */
   hits: HitSnapshot[]
+  /** Balls from a batch that have not appeared yet. */
+  drops: { typeIndex: number; at: number }[]
 }
 
 export function createSession(): Session {
@@ -93,5 +95,6 @@ export function createSession(): Session {
     live: false,
     clients: new Map(),
     hits: [],
+    drops: [],
   }
 }
