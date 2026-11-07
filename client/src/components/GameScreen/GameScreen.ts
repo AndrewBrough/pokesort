@@ -47,7 +47,7 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
   root.append(toolbarSlot, stage, dock)
   parent.append(root)
 
-  const toolbar: ToolbarHandle = mountToolbar(toolbarSlot, handlers.onDropBatch, {
+  const toolbar: ToolbarHandle = mountToolbar(toolbarSlot, import.meta.env.DEV ? handlers.onDropBatch : null, {
     muted: handlers.muted,
     onMute: handlers.onMute,
   })
@@ -73,7 +73,6 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
         overflowMs: state?.overflowMs ?? 0,
         nextBatchMs: state?.nextBatchMs ?? 0,
         canDrop: connected && state?.status === 'playing',
-        onDropBatch: handlers.onDropBatch,
       })
       upgrades.update({
         bagCost: state?.you.bagCost ?? null,

@@ -11,7 +11,6 @@ export type ToolbarProps = {
   overflowMs: number
   nextBatchMs: number
   canDrop: boolean
-  onDropBatch: () => void
 }
 
 export type ToolbarMuteProps = {
@@ -26,7 +25,7 @@ export type ToolbarHandle = {
 
 export function mountToolbar(
   parent: HTMLElement,
-  onDropBatch: () => void,
+  onDropBatch: (() => void) | null,
   mute: ToolbarMuteProps,
 ): ToolbarHandle {
   const root = document.createElement('header')
@@ -51,11 +50,13 @@ export function mountToolbar(
   bin.append(fullness, meter)
   const batch = document.createElement('p')
   batch.className = 'toolbar__batch'
-  const drop = document.createElement('button')
-  drop.type = 'button'
-  drop.className = 'toolbar__drop'
-  drop.textContent = 'Drop batch'
-  drop.addEventListener('click', onDropBatch)
+  const drop = onDropBatch ? document.createElement('button') : null
+  if (drop && onDropBatch) {
+    drop.type = 'button'
+    drop.className = 'toolbar__drop'
+    drop.textContent = 'Drop batch'
+    drop.addEventListener('click', onDropBatch)
+  }
   const spacer = document.createElement('div')
   spacer.className = 'toolbar__spacer'
   const players = document.createElement('p')
@@ -77,7 +78,7 @@ export function mountToolbar(
     showMute()
     mute.onMute(muted)
   })
-  root.append(wallet, bin, batch, drop, spacer, players, clock, muteButton)
+  root.append(wallet, bin, batch, ...(drop ? [drop] : []), spacer, players, clock, muteButton)
   parent.append(root)
 
   return {
@@ -89,7 +90,7 @@ export function mountToolbar(
       bin.dataset.state = props.fullness > 1 ? 'overflow' : props.fullness > 0.75 ? 'high' : 'ok'
       fill.style.width = `${Math.min(100, percent)}%`
       batch.textContent = `Next Drop in ${formatSeconds(props.nextBatchMs)}`
-      drop.disabled = !props.connected || !props.canDrop
+      if (drop) drop.disabled = !props.connected || !props.canDrop
       players.textContent = props.playerCount === 1 ? '1 player' : `${props.playerCount} players`
       clock.textContent = formatClock(props.sessionMs)
     },
