@@ -30,6 +30,7 @@ export class BallLayer extends Container {
         sprite.roundPixels = true
         sprite.x = ball.x
         sprite.y = ball.y
+        sprite.rotation = Math.random() * Math.PI * 2
         sprite.typeIndex = ball.typeIndex
         this.sprites.set(ball.id, sprite)
         this.addChild(sprite)
