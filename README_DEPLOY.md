@@ -161,7 +161,7 @@ sudo apt install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d example.com
 ```
 
-## Update from main
+## Update from main - just run update.sh which runs the below:
 
 ```bash
 sudo systemctl stop pokesort
