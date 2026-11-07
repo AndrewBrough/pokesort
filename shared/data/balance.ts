@@ -117,3 +117,10 @@ export function nextUnloadCost(level: number): number | null {
   if (level >= UNLOAD_LEVELS) return null
   return Math.round(UNLOAD_BASE_COST * (1 + UNLOAD_COST_STEP * level))
 }
+
+/** A full shelf sells for this many times its ball value, per slot. */
+export const SHELF_SALE_FACTOR = 10
+
+export function shelfSaleBonus(ballValue: number, slotCount: number): number {
+  return SHELF_SALE_FACTOR * ballValue * slotCount
+}

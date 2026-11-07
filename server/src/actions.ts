@@ -21,6 +21,7 @@ import {
   VACUUM_FILTER_COST,
   nextUnloadCost,
   nextVacuumSizeCost,
+  shelfSaleBonus,
   nextVacuumStrengthCost,
   unloadInterval,
   tierUnlockCost,
@@ -208,7 +209,7 @@ function placeOnShelf(session: Session, ball: Ball, shelf: Shelf, slot: number, 
 function cashOut(session: Session, shelf: Shelf): void {
   const value = ballByIndex(shelf.typeIndex).value
   const count = shelf.slots.length
-  const bonus = 10 * value * count
+  const bonus = shelfSaleBonus(value, count)
   session.totalValue += bonus
   for (const id of shelf.slots) {
     if (id) session.balls.delete(id)

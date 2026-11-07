@@ -12,5 +12,6 @@ export {
   VACUUM_LEVELS,
   nextBagCost,
   nextBagGain,
+  shelfSaleBonus,
   unloadInterval,
 } from '../../../shared/data/balance.ts'

@@ -1,6 +1,7 @@
 import type { FpsCounterHandle } from '../components/FpsCounter/FpsCounter.ts'
 import { mountGameScreen } from '../components/GameScreen/GameScreen.ts'
-import { unloadInterval } from '../data/balance.ts'
+import { shelfSaleBonus, unloadInterval } from '../data/balance.ts'
+import { ballByIndex } from '../data/ball.ts'
 import { BIN, SHELF_CAPACITY } from '../data/layout.ts'
 import type { ClientMessage, WorldSnapshot } from '../data/messages.ts'
 import { connectSocket } from '../net/socket.ts'
@@ -95,7 +96,11 @@ export async function mountGame(root: HTMLElement): Promise<void> {
         !!shelf && shelf.filled < SHELF_CAPACITY && !!you?.bag.some((ball) => ball.typeIndex === shelf.typeIndex)
       if (!matches || !shelf) return false
       const to = stage?.flyTarget(shelfIndex)
-      if (to) stage?.popUnload({ typeIndex: shelf.typeIndex, shelfIndex, from: pointer, to })
+      if (to) {
+        const value = ballByIndex(shelf.typeIndex).value
+        const earned = value + (to.fillsShelf ? shelfSaleBonus(value, SHELF_CAPACITY) : 0)
+        stage?.popUnload({ typeIndex: shelf.typeIndex, shelfIndex, from: pointer, to, earned })
+      }
       send({ type: 'deposit', shelfIndex })
       return true
     }

@@ -2,6 +2,7 @@ import { Application, Container, Graphics } from 'pixi.js'
 import { WORLD_H, WORLD_W } from '../data/layout.ts'
 import type { WorldSnapshot } from '../data/messages.ts'
 import { BallLayer } from './BallLayer/BallLayer.ts'
+import { EarnPop } from './EarnPop/EarnPop.ts'
 import { drawMart } from './drawMart.ts'
 import { PlayerCursors, type LocalCursor } from './PlayerCursors/PlayerCursors.ts'
 import { ShelfLayer } from './ShelfLayer/ShelfLayer.ts'
@@ -27,7 +28,7 @@ export type StageHandle = {
   sync: (state: WorldSnapshot) => void
   ballAt: (x: number, y: number) => string | null
   shelfAt: (x: number, y: number) => number | null
-  flyTarget: (shelfIndex: number) => { x: number; y: number } | null
+  flyTarget: (shelfIndex: number) => { x: number; y: number; fillsShelf: boolean } | null
   popUnload: (props: UnloadPopLaunch) => void
   showUnload: (indexes: readonly number[]) => void
   showVacuum: (props: VacuumAimProps) => void
@@ -63,12 +64,14 @@ export async function createStage(
   const range = new VacuumRange()
   const vacuum = new VacuumStream()
   const pops = new UnloadPop(textures)
+  const earn = new EarnPop()
   const cursors = new PlayerCursors()
-  world.addChild(mart, shelves, range, balls, pops, vacuum, cursors)
+  world.addChild(mart, shelves, range, balls, pops, earn, vacuum, cursors)
   app.stage.addChild(world)
   app.ticker.add((ticker) => {
     balls.step(ticker.deltaMS)
-    pops.step(ticker.deltaMS)
+    earn.step(ticker.deltaMS)
+    for (const land of pops.step(ticker.deltaMS)) earn.launch(land)
     shelves.setLag(pops.lag())
     onTick(ticker.deltaMS)
     vacuum.step(ticker.deltaMS)

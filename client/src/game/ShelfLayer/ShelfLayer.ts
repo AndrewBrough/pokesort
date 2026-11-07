@@ -39,11 +39,12 @@ export class ShelfLayer extends Container {
     for (const view of this.views.values()) view.setActive(indexes.has(view.index))
   }
 
-  flyTarget(index: number): { x: number; y: number } | null {
+  flyTarget(index: number): { x: number; y: number; fillsShelf: boolean } | null {
     const view = this.views.get(index)
     if (!view) return null
-    const slot = Math.min(SHELF_CAPACITY - 1, view.filled + (this.lag.get(index) ?? 0))
-    return view.slotPoint(slot)
+    const next = view.filled + (this.lag.get(index) ?? 0)
+    const slot = Math.min(SHELF_CAPACITY - 1, next)
+    return { ...view.slotPoint(slot), fillsShelf: next >= SHELF_CAPACITY - 1 }
   }
 
   shelfAt(x: number, y: number): number | null {

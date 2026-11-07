@@ -1,6 +1,6 @@
 import { Container, Sprite, type Texture } from 'pixi.js'
 
-const FLIGHT_MS = 280
+export const UNLOAD_POP_MS = 280
 const POP = 1.6
 
 type Flight = {
@@ -10,6 +10,7 @@ type Flight = {
   fromY: number
   toX: number
   toY: number
+  earned: number
   age: number
 }
 
@@ -18,6 +19,7 @@ export type UnloadPopLaunch = {
   shelfIndex: number
   from: { x: number; y: number }
   to: { x: number; y: number }
+  earned: number
 }
 
 export class UnloadPop extends Container {
@@ -45,24 +47,28 @@ export class UnloadPop extends Container {
       fromY: props.from.y,
       toX: props.to.x,
       toY: props.to.y,
+      earned: props.earned,
       age: 0,
     })
   }
 
-  step(dtMs: number): void {
+  step(dtMs: number): { x: number; y: number; earned: number }[] {
+    const landed: { x: number; y: number; earned: number }[] = []
     for (let i = this.flights.length - 1; i >= 0; i--) {
       const flight = this.flights[i]
       flight.age += dtMs
-      const t = Math.min(1, flight.age / FLIGHT_MS)
+      const t = Math.min(1, flight.age / UNLOAD_POP_MS)
       flight.sprite.position.set(
         flight.fromX + (flight.toX - flight.fromX) * t,
         flight.fromY + (flight.toY - flight.fromY) * t,
       )
       flight.sprite.scale.set(Math.sin(t * Math.PI) * POP)
       if (t < 1) continue
+      landed.push({ x: flight.toX, y: flight.toY, earned: flight.earned })
       flight.sprite.destroy()
       this.flights.splice(i, 1)
     }
+    return landed
   }
 
   lag(): ReadonlyMap<number, number> {
