@@ -10,7 +10,6 @@
 }
 
 .toolbar__value,
-.toolbar__fullness,
 .toolbar__batch,
 .toolbar__players,
 .toolbar__clock {
@@ -20,15 +19,51 @@
   white-space: nowrap;
 }
 
+.toolbar__wallet {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+.toolbar__wallet-kind {
+  margin: 0;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #c4a36a;
+}
+
 .toolbar__value {
   font-size: 20px;
   font-weight: 700;
   min-width: 7ch;
+  line-height: 1.3rem;
+}
+
+.toolbar__bin {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+.toolbar__fullness {
+  margin: 0;
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: #c4a36a;
 }
 
 .toolbar__meter {
   width: 112px;
-  height: 12px;
+  height: 1.3rem;
   flex: 0 0 auto;
   background: #1c140e;
   border: 2px solid #1c140e;
@@ -40,15 +75,15 @@
   background: #7dce5a;
 }
 
-.toolbar__meter[data-state='high'] .toolbar__fill {
+.toolbar__bin[data-state='high'] .toolbar__fill {
   background: #e0a030;
 }
 
-.toolbar__meter[data-state='overflow'] .toolbar__fill {
+.toolbar__bin[data-state='overflow'] .toolbar__fill {
   background: #d64545;
 }
 
-.toolbar__meter[data-state='overflow'] + .toolbar__fullness {
+.toolbar__bin[data-state='overflow'] .toolbar__fullness {
   color: #ffb4a8;
 }
 

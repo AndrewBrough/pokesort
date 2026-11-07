@@ -2,7 +2,6 @@ import { Application, Container, Graphics } from 'pixi.js'
 import { WORLD_H, WORLD_W } from '../data/layout.ts'
 import type { WorldSnapshot } from '../data/messages.ts'
 import { BallLayer } from './BallLayer/BallLayer.ts'
-import { BinFullness } from './BinFullness/BinFullness.ts'
 import { drawMart } from './drawMart.ts'
 import { PlayerCursors, type LocalCursor } from './PlayerCursors/PlayerCursors.ts'
 import { ShelfLayer } from './ShelfLayer/ShelfLayer.ts'
@@ -59,9 +58,8 @@ export async function createStage(
   const balls = new BallLayer(textures)
   const range = new VacuumRange()
   const vacuum = new VacuumStream()
-  const fullness = new BinFullness()
   const cursors = new PlayerCursors()
-  world.addChild(mart, shelves, range, balls, vacuum, fullness, cursors)
+  world.addChild(mart, shelves, range, balls, vacuum, cursors)
   app.stage.addChild(world)
   app.ticker.add((ticker) => {
     balls.step(ticker.deltaMS)
@@ -103,10 +101,6 @@ export async function createStage(
         : new Set<number>()
       shelves.sync(state.shelves, hintTypes)
       balls.sync(state.bin, state.binRemoved)
-      fullness.update({
-        percent: Math.round(state.fullness * 100),
-        overflowing: state.fullness > 1,
-      })
       cursors.sync({ cursors: state.cursors })
     },
     ballAt: (x, y) => balls.ballAt(x, y),

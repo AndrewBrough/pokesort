@@ -1,4 +1,5 @@
 import './Toolbar.css'
+import { BIN_CAPACITY } from '../../data/balance.ts'
 import { formatClock, formatSeconds, formatValue } from '../../format.ts'
 
 export type ToolbarProps = {
@@ -30,15 +31,24 @@ export function mountToolbar(
 ): ToolbarHandle {
   const root = document.createElement('header')
   root.className = 'toolbar'
+  const wallet = document.createElement('div')
+  wallet.className = 'toolbar__wallet'
+  const walletKind = document.createElement('p')
+  walletKind.className = 'toolbar__wallet-kind'
+  walletKind.textContent = 'Team Wallet'
   const value = document.createElement('p')
   value.className = 'toolbar__value'
+  wallet.append(walletKind, value)
+  const bin = document.createElement('div')
+  bin.className = 'toolbar__bin'
+  const fullness = document.createElement('p')
+  fullness.className = 'toolbar__fullness'
   const meter = document.createElement('div')
   meter.className = 'toolbar__meter'
   const fill = document.createElement('div')
   fill.className = 'toolbar__fill'
-  const fullness = document.createElement('p')
-  fullness.className = 'toolbar__fullness'
   meter.append(fill)
+  bin.append(fullness, meter)
   const batch = document.createElement('p')
   batch.className = 'toolbar__batch'
   const drop = document.createElement('button')
@@ -67,17 +77,18 @@ export function mountToolbar(
     showMute()
     mute.onMute(muted)
   })
-  root.append(value, meter, fullness, batch, drop, spacer, players, clock, muteButton)
+  root.append(wallet, bin, batch, drop, spacer, players, clock, muteButton)
   parent.append(root)
 
   return {
     update(props) {
       value.textContent = props.connected ? formatValue(props.totalValue) : 'Connecting…'
       const percent = Math.round(props.fullness * 100)
-      fullness.textContent = props.overflowMs > 0 ? `Overflow ${formatSeconds(7000 - props.overflowMs)}` : `Bin ${percent}%`
-      meter.dataset.state = props.fullness > 1 ? 'overflow' : props.fullness > 0.75 ? 'high' : 'ok'
+      const count = Math.round(props.fullness * BIN_CAPACITY)
+      fullness.textContent = props.overflowMs > 0 ? `Overflow ${formatSeconds(7000 - props.overflowMs)}` : `Bin ${count} / ${BIN_CAPACITY}`
+      bin.dataset.state = props.fullness > 1 ? 'overflow' : props.fullness > 0.75 ? 'high' : 'ok'
       fill.style.width = `${Math.min(100, percent)}%`
-      batch.textContent = `Next ${formatSeconds(props.nextBatchMs)}`
+      batch.textContent = `Next Drop in ${formatSeconds(props.nextBatchMs)}`
       drop.disabled = !props.connected || !props.canDrop
       players.textContent = props.playerCount === 1 ? '1 player' : `${props.playerCount} players`
       clock.textContent = formatClock(props.sessionMs)
