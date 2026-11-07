@@ -3,6 +3,7 @@ import { STARTING_BAG } from '../../data/balance.ts'
 import type { WorldSnapshot } from '../../data/messages.ts'
 import type { UpgradeId } from '../../data/upgrades.ts'
 import { mountBagPanel, type BagPanelHandle } from '../BagPanel/BagPanel.ts'
+import { mountBuildStamp, type BuildStampHandle } from '../BuildStamp/BuildStamp.ts'
 import { mountGameOver, type GameOverHandle } from '../GameOver/GameOver.ts'
 import { mountNoticeBanner, type NoticeBannerHandle } from '../NoticeBanner/NoticeBanner.ts'
 import { mountToolbar, type ToolbarHandle } from '../Toolbar/Toolbar.ts'
@@ -53,6 +54,7 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
   const bag: BagPanelHandle = mountBagPanel(bagSlot, handlers.onDropBall)
   const notice: NoticeBannerHandle = mountNoticeBanner(noticeSlot)
   const gameOver: GameOverHandle = mountGameOver(overSlot, handlers.onRestart)
+  const build: BuildStampHandle = mountBuildStamp(root, { commit: import.meta.env.VITE_COMMIT })
 
   return {
     stage,
@@ -97,6 +99,7 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
       bag.destroy()
       notice.destroy()
       gameOver.destroy()
+      build.destroy()
       root.remove()
     },
   }
