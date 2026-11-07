@@ -5,8 +5,8 @@ import { extname, join, normalize, resolve } from 'node:path'
 import { WebSocketServer, type RawData, type WebSocket } from 'ws'
 import { SIM_STEP_MS, SNAPSHOT_EVERY_STEPS, STARTING_BAG } from '../../shared/data/balance.ts'
 import type { ClientMessage } from '../../shared/data/messages.ts'
-import { applyAction, beginRun, returnBag, tick } from './actions.ts'
-import { createSession, type Session } from './session.ts'
+import { applyAction, beginRun, rememberClient, returnBag, tick } from './actions.ts'
+import { createSession, type ClientUpgrades, type Session } from './session.ts'
 import { snapshotFor } from './snapshot.ts'
 
 const PORT = Number(process.env.PORT ?? 8787)
@@ -89,6 +89,17 @@ async function serveStatic(req: IncomingMessage, res: ServerResponse): Promise<v
   }
 }
 
+function clientKeyFrom(request: IncomingMessage): string | null {
+  const raw = new URL(request.url ?? '/', 'http://localhost').searchParams.get('client')
+  if (!raw || !/^[0-9a-f-]{36}$/.test(raw)) return null
+  return raw
+}
+
+function upgradesFor(session: Session, clientKey: string | null): ClientUpgrades | undefined {
+  if (!clientKey) return undefined
+  return session.clients.get(clientKey)
+}
+
 function broadcast(session: Session, sockets: Map<WebSocket, string>): void {
   for (const [socket, playerId] of sockets) {
     send(socket, { type: 'state', state: snapshotFor(session, playerId) })
@@ -125,14 +136,17 @@ export function startServer(): void {
   })
 
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' })
-  wss.on('connection', (socket) => {
+  wss.on('connection', (socket, request) => {
+    const clientKey = clientKeyFrom(request)
+    const saved = upgradesFor(session, clientKey)
     const id = `p${session.nextPlayer++}`
     session.players.set(id, {
       id,
+      clientKey,
       bag: [],
-      bagSize: STARTING_BAG,
-      vacuum: false,
-      shelfHint: false,
+      bagSize: saved?.bagSize ?? STARTING_BAG,
+      vacuum: saved?.vacuum ?? false,
+      shelfHint: saved?.shelfHint ?? false,
       vacuumAim: null,
       toast: null,
     })
@@ -154,6 +168,7 @@ export function startServer(): void {
 
     socket.on('close', () => {
       sockets.delete(socket)
+      rememberClient(session, id)
       returnBag(session, id)
       session.players.delete(id)
       if (session.players.size === 0) stopLoop()

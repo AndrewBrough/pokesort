@@ -59,6 +59,7 @@ export function beginRun(session: Session): void {
   session.nextBall = 1
   session.toast = null
   session.toastSeq = 0
+  session.clients.clear()
   for (const player of session.players.values()) {
     player.bag = []
     player.bagSize = STARTING_BAG
@@ -185,6 +186,16 @@ export function tick(session: Session, dtMs: number): void {
     spawnDrop(session)
   }
   decayToasts(session, dtMs)
+}
+
+export function rememberClient(session: Session, playerId: string): void {
+  const player = session.players.get(playerId)
+  if (!player?.clientKey) return
+  session.clients.set(player.clientKey, {
+    bagSize: player.bagSize,
+    vacuum: player.vacuum,
+    shelfHint: player.shelfHint,
+  })
 }
 
 export function returnBag(session: Session, playerId: string): void {

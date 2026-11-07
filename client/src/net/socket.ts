@@ -1,5 +1,15 @@
 import type { ClientMessage, ServerMessage } from '../data/messages.ts'
 
+const CLIENT_KEY = 'pokesort-client'
+
+function clientId(): string {
+  const existing = localStorage.getItem(CLIENT_KEY)
+  if (existing && /^[0-9a-f-]{36}$/.test(existing)) return existing
+  const next = crypto.randomUUID()
+  localStorage.setItem(CLIENT_KEY, next)
+  return next
+}
+
 export type SocketHandle = {
   send: (message: ClientMessage) => void
   close: () => void
@@ -16,9 +26,10 @@ export function connectSocket(
     if (closed) return
     const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
     const configured = import.meta.env.VITE_WS_URL
-    const url = typeof configured === 'string' && configured.length > 0
-      ? configured
-      : `${protocol}://${location.host}/ws`
+    const url = new URL(
+      typeof configured === 'string' && configured.length > 0 ? configured : `${protocol}://${location.host}/ws`,
+    )
+    url.searchParams.set('client', clientId())
     const next = new WebSocket(url)
     socket = next
     next.addEventListener('open', () => onStatus(true))

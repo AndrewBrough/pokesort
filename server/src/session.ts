@@ -29,12 +29,20 @@ export type Toast = {
 
 export type Player = {
   id: string
+  /** Stable browser id, used to restore upgrades after a reload. */
+  clientKey: string | null
   bag: string[]
   bagSize: number
   vacuum: boolean
   shelfHint: boolean
   vacuumAim: { x: number; y: number; at: number } | null
   toast: Toast | null
+}
+
+export type ClientUpgrades = {
+  bagSize: number
+  vacuum: boolean
+  shelfHint: boolean
 }
 
 export type Session = {
@@ -54,6 +62,8 @@ export type Session = {
   unlockedTypes: number[]
   /** False until the first player joins, so the process stays idle. */
   live: boolean
+  /** Upgrades kept for a browser until the next run. */
+  clients: Map<string, ClientUpgrades>
 }
 
 export function createSession(): Session {
@@ -72,5 +82,6 @@ export function createSession(): Session {
     toast: null,
     unlockedTypes: [],
     live: false,
+    clients: new Map(),
   }
 }
