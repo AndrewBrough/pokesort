@@ -1,18 +1,33 @@
 export const WORLD_W = 1280
 export const WORLD_H = 720
 
-export const SHELF_W = 96
-export const SHELF_H = 88
-export const SLOT = 16
+export const SLOT = 12
 export const SHELF_COLUMNS = 5
 export const SHELF_ROWS = 4
 export const SHELF_CAPACITY = SHELF_COLUMNS * SHELF_ROWS
+export const SHELF_LABEL_H = 14
+export const SHELF_W = 84
+export const SHELF_H = SHELF_LABEL_H + SHELF_ROWS * SLOT + 8
 
 /** Shelves are addressed by index. The shop uses 0–17; the protocol allows 0–999. */
 export const SHELF_INDEX_MAX = 999
 
-/** Interior of the bin. The rim sits just inside the shelves, with room for the fill label. */
-export const BIN = { x: 136, y: 118, w: 1008, h: 452 }
+const SIDE_COUNT = 9
+const MARGIN = 12
+const GAP = 8
+const RIM = 10
+const SHELF_BIN_GAP = 8
+const LABEL_ROOM = 28
+
+const columnHeight = SIDE_COUNT * SHELF_H + (SIDE_COUNT - 1) * GAP
+const shelfBottom = MARGIN + columnHeight
+const binX = MARGIN + SHELF_W + SHELF_BIN_GAP + RIM
+const binRight = WORLD_W - MARGIN - SHELF_W - SHELF_BIN_GAP - RIM
+const binY = MARGIN + RIM
+const binBottom = shelfBottom - LABEL_ROOM
+
+/** Interior of the bin. Side shelves flank it; the fill label sits under the rim. */
+export const BIN = { x: binX, y: binY, w: binRight - binX, h: binBottom - binY }
 
 export type ShelfFrame = {
   index: number
@@ -20,24 +35,16 @@ export type ShelfFrame = {
   y: number
 }
 
-const TOP_COUNT = 5
-const SIDE_COUNT = 4
-const BOTTOM_COUNT = 5
-const COLUMN_GAP = 18
-const SIDE_Y = [140, 260, 380, 500]
-
 function buildFrames(): readonly ShelfFrame[] {
   const frames: ShelfFrame[] = []
-  const add = (x: number, y: number) => {
-    frames.push({ index: frames.length, x, y })
+  const step = SHELF_H + GAP
+  const leftX = MARGIN
+  const rightX = WORLD_W - MARGIN - SHELF_W
+  for (let row = 0; row < SIDE_COUNT; row++) {
+    const y = MARGIN + row * step
+    frames.push({ index: frames.length, x: leftX, y })
+    frames.push({ index: frames.length, x: rightX, y })
   }
-  const rowWidth = TOP_COUNT * SHELF_W + (TOP_COUNT - 1) * COLUMN_GAP
-  const rowX = (WORLD_W - rowWidth) / 2
-  for (let i = 0; i < TOP_COUNT; i++) add(rowX + i * (SHELF_W + COLUMN_GAP), 12)
-  for (let i = 0; i < SIDE_COUNT; i++) add(20, SIDE_Y[i])
-  for (let i = 0; i < SIDE_COUNT; i++) add(WORLD_W - 20 - SHELF_W, SIDE_Y[i])
-  const bottomY = WORLD_H - 12 - SHELF_H
-  for (let i = 0; i < BOTTOM_COUNT; i++) add(rowX + i * (SHELF_W + COLUMN_GAP), bottomY)
   return frames
 }
 
@@ -49,8 +56,7 @@ export function slotCenter(slot: number): { x: number; y: number } {
   const fromBottom = Math.floor(slot / SHELF_COLUMNS)
   const row = SHELF_ROWS - 1 - fromBottom
   const padX = (SHELF_W - SHELF_COLUMNS * SLOT) / 2
-  const labelH = 16
-  const padY = labelH + (SHELF_H - labelH - SHELF_ROWS * SLOT) / 2
+  const padY = SHELF_LABEL_H + (SHELF_H - SHELF_LABEL_H - SHELF_ROWS * SLOT) / 2
   return {
     x: padX + col * SLOT + SLOT / 2,
     y: padY + row * SLOT + SLOT / 2,

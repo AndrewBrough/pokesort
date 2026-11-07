@@ -1,6 +1,6 @@
 import { Container, Graphics, Sprite, Text, type Texture } from 'pixi.js'
-import { ballByIndex } from '../../data/ball.ts'
-import { SHELF_CAPACITY, SHELF_H, SHELF_W, slotCenter } from '../../data/layout.ts'
+import { BALL_SIZE, ballByIndex } from '../../data/ball.ts'
+import { SHELF_CAPACITY, SHELF_H, SHELF_LABEL_H, SHELF_W, SLOT, slotCenter } from '../../data/layout.ts'
 
 export type ShelfViewProps = {
   typeIndex: number
@@ -21,12 +21,12 @@ export class ShelfView extends Container {
     const board = new Graphics()
     board.rect(0, 0, SHELF_W, SHELF_H).fill(0x3b2412)
     board.rect(2, 2, SHELF_W - 4, SHELF_H - 4).fill(0xc68642)
-    board.rect(4, 16, SHELF_W - 8, SHELF_H - 22).fill(0x6b3a1c)
-    board.rect(4, 3, SHELF_W - 8, 12).fill(0xf0d7a8)
+    board.rect(4, SHELF_LABEL_H, SHELF_W - 8, SHELF_H - SHELF_LABEL_H - 4).fill(0x6b3a1c)
+    board.rect(4, 3, SHELF_W - 8, SHELF_LABEL_H - 4).fill(0xf0d7a8)
     this.addChild(board)
     this.namePlate = new Text({
       text: '',
-      style: { fontFamily: 'ui-monospace, monospace', fontSize: 10, fill: 0x2a160c },
+      style: { fontFamily: 'ui-monospace, monospace', fontSize: 8, fill: 0x2a160c },
       resolution: 2,
     })
     this.namePlate.anchor.set(0.5, 0)
@@ -36,7 +36,7 @@ export class ShelfView extends Container {
     this.slots = Array.from({ length: SHELF_CAPACITY }, (_, slot) => {
       const sprite = new Sprite(texture)
       sprite.anchor.set(0.5)
-      sprite.scale.set(0.5)
+      sprite.scale.set(SLOT / BALL_SIZE)
       sprite.roundPixels = true
       sprite.visible = false
       const center = slotCenter(slot)

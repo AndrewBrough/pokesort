@@ -5,6 +5,7 @@ export {
   SHELF_FRAMES,
   SHELF_H,
   SHELF_INDEX_MAX,
+  SHELF_LABEL_H,
   SHELF_ROWS,
   SHELF_W,
   SLOT,
