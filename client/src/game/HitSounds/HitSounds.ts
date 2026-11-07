@@ -4,6 +4,8 @@ import type { HitSnapshot } from '../../data/messages.ts'
 
 const CLIPS = ['/sfx/01.tink1.wav', '/sfx/02.tink2.wav', '/sfx/03.tink3.wav', '/sfx/04.tink4.wav']
 const LOUD_SPEED = 420
+const PITCH_MIN = 1.5
+const PITCH_MAX = 3
 
 export type HitSoundsHandle = {
   unlock: () => void
@@ -50,9 +52,9 @@ export function createHitSounds(): HitSoundsHandle {
     }
     const source = context.createBufferSource()
     source.buffer = buffer
-    source.playbackRate.value = 0.94 + Math.random() * 0.12
-    const gain = context.createGain()
     const amount = Math.min(1, Math.max(0, (hit.speed - HIT_MIN_SPEED) / (LOUD_SPEED - HIT_MIN_SPEED)))
+    source.playbackRate.value = PITCH_MIN + amount * (PITCH_MAX - PITCH_MIN)
+    const gain = context.createGain()
     gain.gain.value = 0.35 + amount * 0.65
     const panner = context.createStereoPanner()
     const mid = BIN.x + BIN.w / 2
