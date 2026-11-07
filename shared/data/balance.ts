@@ -1,4 +1,4 @@
-export const BIN_CAPACITY = 320
+export const BIN_CAPACITY = 3200
 export const OVERFLOW_LIMIT_MS = 7000
 export const SIM_STEP_MS = 50
 export const SNAPSHOT_EVERY_STEPS = 2
@@ -8,7 +8,7 @@ export const VACUUM_COOLDOWN_MS = 130
 export const VACUUM_COST = 3500
 
 /** Every unlocked ball type drops this many balls each batch. */
-export const DROP_RATE = 2
+export const DROP_RATE = 10
 export const BATCH_INTERVAL_MS = 14_000
 
 /** Price of the next tier is its ball value times this factor. */
