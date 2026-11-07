@@ -1,5 +1,6 @@
-import { BALL_RADIUS, VACUUM_CATCH_RADIUS } from '../../shared/data/balance.ts'
+import { BALL_RADIUS, HIT_MIN_SPEED, VACUUM_CATCH_RADIUS } from '../../shared/data/balance.ts'
 import { BIN } from '../../shared/data/layout.ts'
+import type { HitSnapshot } from '../../shared/data/messages.ts'
 import type { Ball } from './session.ts'
 
 export type VacuumPull = {
@@ -16,7 +17,11 @@ export type VacuumCatch = {
   playerId: string
 }
 
-function separate(a: Ball, b: Ball, rest: number): void {
+function pairKey(a: Ball, b: Ball): string {
+  return a.id < b.id ? `${a.id}:${b.id}` : `${b.id}:${a.id}`
+}
+
+function separate(a: Ball, b: Ball, rest: number, heard: Set<string>, hits: HitSnapshot[]): void {
   let dx = b.x - a.x
   let dy = b.y - a.y
   const distSq = dx * dx + dy * dy
@@ -45,6 +50,12 @@ function separate(a: Ball, b: Ball, rest: number): void {
     a.vy += ny * impulse
     b.vx -= nx * impulse
     b.vy -= ny * impulse
+    const speed = -rel
+    const key = pairKey(a, b)
+    if (speed >= HIT_MIN_SPEED && !heard.has(key)) {
+      heard.add(key)
+      hits.push({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, speed })
+    }
   }
 }
 
@@ -74,7 +85,7 @@ export function stepBin(
   leak: number,
   dt: number,
   pulls: readonly VacuumPull[] = [],
-): { spilled: boolean; caught: VacuumCatch[] } {
+): { spilled: boolean; caught: VacuumCatch[]; hits: HitSnapshot[] } {
   const binBalls: Ball[] = []
   for (const ball of balls) {
     if (ball.where === 'bin') binBalls.push(ball)
@@ -99,9 +110,11 @@ export function stepBin(
   }
 
   const loose = binBalls.filter((ball) => !pulled.has(ball))
+  const hits: HitSnapshot[] = []
+  const heard = new Set<string>()
   for (let iter = 0; iter < 4; iter++) {
     for (let i = 0; i < loose.length; i++) {
-      for (let j = i + 1; j < loose.length; j++) separate(loose[i], loose[j], rest)
+      for (let j = i + 1; j < loose.length; j++) separate(loose[i], loose[j], rest, heard, hits)
     }
     for (const ball of loose) {
       if (ball.x < left) {
@@ -143,7 +156,7 @@ export function stepBin(
 
   if (hold) {
     for (const ball of binBalls) ball.outsideMs = 0
-    return { spilled: false, caught }
+    return { spilled: false, caught, hits }
   }
 
   let spilled = false
@@ -152,5 +165,5 @@ export function stepBin(
     ball.outsideMs = outside ? ball.outsideMs + dt * 1000 : 0
     if (ball.outsideMs > 1200) spilled = true
   }
-  return { spilled, caught }
+  return { spilled, caught, hits }
 }

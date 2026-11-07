@@ -32,6 +32,12 @@ export type CursorSnapshot = {
   y: number
 }
 
+export type HitSnapshot = {
+  x: number
+  y: number
+  speed: number
+}
+
 export type PlayerSnapshot = {
   bag: BagBallSnapshot[]
   bagSize: number
@@ -69,6 +75,8 @@ export type WorldSnapshot = {
   /** Bin balls this client should drop. Absent from `bin` does not mean removed. */
   binRemoved: string[]
   cursors: CursorSnapshot[]
+  /** Loudest ball-on-ball hits since the previous snapshot. */
+  hits: HitSnapshot[]
   you: PlayerSnapshot
 }
 

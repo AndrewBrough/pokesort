@@ -3,6 +3,7 @@ export type {
   BinBallSnapshot,
   ClientMessage,
   CursorSnapshot,
+  HitSnapshot,
   PlayerSnapshot,
   ServerMessage,
   ShelfSnapshot,

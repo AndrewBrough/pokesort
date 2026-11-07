@@ -93,6 +93,11 @@ export function snapshotFor(
     bin,
     binRemoved,
     cursors: otherCursors(session, playerId),
+    hits: session.hits.map((hit) => ({
+      x: Math.round(hit.x),
+      y: Math.round(hit.y),
+      speed: Math.round(hit.speed),
+    })),
     you: {
       bag: (player?.bag ?? []).flatMap((id) => {
         const ball = session.balls.get(id)

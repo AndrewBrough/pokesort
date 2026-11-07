@@ -17,6 +17,10 @@ export const VACUUM_PULL_STEP = 28
 export const VACUUM_CATCH_RADIUS = BALL_SIZE / 2
 /** Drop a held aim if the client stops sending it. */
 export const VACUUM_AIM_MS = 200
+/** Ball-on-ball hits slower than this (px/s) stay silent. */
+export const HIT_MIN_SPEED = 140
+/** Loudest hits kept per snapshot, and the most clacks playing at once. */
+export const HIT_VOICES = 5
 export const VACUUM_COST = 3500
 export const VACUUM_SIZE_BASE_COST = 1600
 export const VACUUM_STRENGTH_BASE_COST = 1800

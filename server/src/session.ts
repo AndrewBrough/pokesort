@@ -1,3 +1,5 @@
+import type { HitSnapshot } from '../../shared/data/messages.ts'
+
 export type BallWhere = 'bin' | 'bag' | 'shelf'
 
 export type Ball = {
@@ -69,6 +71,8 @@ export type Session = {
   live: boolean
   /** Upgrades kept for a browser until the next run. */
   clients: Map<string, ClientUpgrades>
+  /** Loud ball-on-ball hits waiting for the next snapshot. */
+  hits: HitSnapshot[]
 }
 
 export function createSession(): Session {
@@ -88,5 +92,6 @@ export function createSession(): Session {
     unlockedTypes: [],
     live: false,
     clients: new Map(),
+    hits: [],
   }
 }

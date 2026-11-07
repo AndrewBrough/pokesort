@@ -4,6 +4,7 @@ import { BIN } from '../data/layout.ts'
 import type { ClientMessage, WorldSnapshot } from '../data/messages.ts'
 import { connectSocket } from '../net/socket.ts'
 import { createStage, type StageHandle } from './createStage.ts'
+import { createHitSounds } from './HitSounds/HitSounds.ts'
 
 export async function mountGame(root: HTMLElement): Promise<void> {
   let snapshot: WorldSnapshot | null = null
@@ -25,7 +26,7 @@ export async function mountGame(root: HTMLElement): Promise<void> {
     onDropBall: (ballId) => send({ type: 'drop', ballId }),
     onGrant: () => send({ type: 'grant' }),
   })
-
+  const hitSounds = createHitSounds()
   const fps: FpsCounterHandle | null = import.meta.env.DEV
     ? (await import('../components/FpsCounter/FpsCounter.ts')).mountFpsCounter(screen.stage)
     : null
@@ -36,6 +37,7 @@ export async function mountGame(root: HTMLElement): Promise<void> {
         snapshot = message.state
         stage?.sync(snapshot)
         screen.update(snapshot, true)
+        hitSounds.play(snapshot.hits)
       }
     },
     (connected) => {
@@ -74,7 +76,6 @@ export async function mountGame(root: HTMLElement): Promise<void> {
     })
     stage?.showSelf(pointerSeen ? pointer : null)
   })
-
   const resize = () => stage?.resize(screen.stage.clientWidth, screen.stage.clientHeight)
   resize()
   if (snapshot) stage.sync(snapshot)
@@ -82,6 +83,7 @@ export async function mountGame(root: HTMLElement): Promise<void> {
   observer.observe(screen.stage)
 
   stage.canvas.addEventListener('pointerdown', (event) => {
+    hitSounds.unlock()
     try {
       stage?.canvas.setPointerCapture(event.pointerId)
     } catch {

@@ -20,6 +20,7 @@ const MIME: Record<string, string> = {
   '.svg': 'image/svg+xml',
   '.json': 'application/json',
   '.webp': 'image/webp',
+  '.wav': 'audio/wav',
   '.ico': 'image/x-icon',
   '.woff2': 'font/woff2',
 }
@@ -111,6 +112,7 @@ function broadcast(
     if (!sentBin) continue
     send(socket, { type: 'state', state: snapshotFor(session, playerId, sentBin) })
   }
+  session.hits = []
 }
 
 export function startServer(): void {

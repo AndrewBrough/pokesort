@@ -5,6 +5,7 @@ import {
   BIN_CAPACITY,
   DEV_GRANT,
   DROP_RATE,
+  HIT_VOICES,
   STARTING_BAG,
   OVERFLOW_LIMIT_MS,
   VACUUM_AIM_MS,
@@ -17,7 +18,7 @@ import {
   vacuumRadius,
 } from '../../shared/data/balance.ts'
 import { BIN, SHELF_CAPACITY, SHELF_FRAMES, SHELF_INDEX_MAX } from '../../shared/data/layout.ts'
-import type { ClientMessage } from '../../shared/data/messages.ts'
+import type { ClientMessage, HitSnapshot } from '../../shared/data/messages.ts'
 import { visibleUpgrades, type UpgradeId, type UpgradeLevels } from '../../shared/data/upgrades.ts'
 import { stepBin, type VacuumPull } from './physics.ts'
 import type { Ball, Player, Session, Shelf } from './session.ts'
@@ -36,6 +37,20 @@ function toast(session: Session, text: string, playerId: string | null): void {
     return
   }
   session.toast = next
+}
+
+function rememberHits(session: Session, hits: readonly HitSnapshot[]): void {
+  for (const hit of hits) {
+    if (session.hits.length < HIT_VOICES) {
+      session.hits.push(hit)
+      continue
+    }
+    let quiet = 0
+    for (let i = 1; i < session.hits.length; i++) {
+      if (session.hits[i].speed < session.hits[quiet].speed) quiet = i
+    }
+    if (hit.speed > session.hits[quiet].speed) session.hits[quiet] = hit
+  }
 }
 
 function playing(session: Session): boolean {
@@ -82,6 +97,7 @@ export function beginRun(session: Session): void {
     player.toast = null
   }
   session.unlockedTypes = []
+  session.hits = []
   const first = ballUnlockOrder()[0]
   if (first !== undefined) unlockTier(session, first)
   spawnDrop(session)
@@ -182,7 +198,14 @@ export function tick(session: Session, dtMs: number): void {
   if (fullness > 1) session.overflowMs += dtMs
   else session.overflowMs = 0
   const leak = fullness <= 1 ? 0 : 8 + (session.overflowMs / OVERFLOW_LIMIT_MS) * 56
-  const { spilled, caught } = stepBin(session.balls.values(), fullness, leak, dtMs / 1000, vacuumPulls(session))
+  const { spilled, caught, hits } = stepBin(
+    session.balls.values(),
+    fullness,
+    leak,
+    dtMs / 1000,
+    vacuumPulls(session),
+  )
+  rememberHits(session, hits)
   for (const hit of caught) {
     const ball = session.balls.get(hit.id)
     const owner = session.players.get(hit.playerId)
