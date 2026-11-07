@@ -26,6 +26,7 @@ export type ToolbarHandle = {
 export function mountToolbar(
   parent: HTMLElement,
   onDropBatch: (() => void) | null,
+  onRestart: (() => void) | null,
   mute: ToolbarMuteProps,
 ): ToolbarHandle {
   const root = document.createElement('header')
@@ -50,13 +51,16 @@ export function mountToolbar(
   bin.append(fullness, meter)
   const batch = document.createElement('p')
   batch.className = 'toolbar__batch'
-  const drop = onDropBatch ? document.createElement('button') : null
-  if (drop && onDropBatch) {
-    drop.type = 'button'
-    drop.className = 'toolbar__drop'
-    drop.textContent = 'Drop batch'
-    drop.addEventListener('click', onDropBatch)
+  const devButton = (label: string, onClick: () => void): HTMLButtonElement => {
+    const button = document.createElement('button')
+    button.type = 'button'
+    button.className = 'toolbar__drop'
+    button.textContent = label
+    button.addEventListener('click', onClick)
+    return button
   }
+  const drop = onDropBatch ? devButton('Drop batch', onDropBatch) : null
+  const reset = onRestart ? devButton('Reset', onRestart) : null
   const spacer = document.createElement('div')
   spacer.className = 'toolbar__spacer'
   const players = document.createElement('p')
@@ -78,7 +82,7 @@ export function mountToolbar(
     showMute()
     mute.onMute(muted)
   })
-  root.append(wallet, bin, batch, ...(drop ? [drop] : []), spacer, players, clock, muteButton)
+  root.append(wallet, bin, batch, ...(drop ? [drop] : []), ...(reset ? [reset] : []), spacer, players, clock, muteButton)
   parent.append(root)
 
   return {
@@ -91,6 +95,7 @@ export function mountToolbar(
       fill.style.width = `${Math.min(100, percent)}%`
       batch.textContent = `Next Drop in ${formatSeconds(props.nextBatchMs)}`
       if (drop) drop.disabled = !props.connected || !props.canDrop
+      if (reset) reset.disabled = !props.connected
       players.textContent = props.playerCount === 1 ? '1 player' : `${props.playerCount} players`
       clock.textContent = formatClock(props.sessionMs)
     },

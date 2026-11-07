@@ -48,11 +48,13 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
   root.append(toolbarSlot, stage, dock)
   parent.append(root)
 
-  const toolbar: ToolbarHandle = mountToolbar(toolbarSlot, import.meta.env.DEV ? handlers.onDropBatch : null, {
-    muted: handlers.muted,
-    onMute: handlers.onMute,
-  })
   const dev = import.meta.env.DEV
+  const toolbar: ToolbarHandle = mountToolbar(
+    toolbarSlot,
+    dev ? handlers.onDropBatch : null,
+    dev ? handlers.onRestart : null,
+    { muted: handlers.muted, onMute: handlers.onMute },
+  )
   const upgrades: UpgradeBarHandle = mountUpgradeBar(
     upgradeSlot,
     handlers.onUpgrade,
