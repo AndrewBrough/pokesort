@@ -4,7 +4,7 @@ export const BIN_CAPACITY = 2500
 export const OVERFLOW_LIMIT_MS = 3000
 export const SIM_STEP_MS = 50
 export const SNAPSHOT_EVERY_STEPS = 2
-export const BALL_RADIUS = BALL_ART.size / 2
+export const BALL_RADIUS = BALL_ART.size / 1.75
 /** Size and strength each stop here until more levels are added. */
 export const VACUUM_LEVELS = 10
 /** Level 0 is smaller than the original 120px vacuum. Level 10 passes it. */
