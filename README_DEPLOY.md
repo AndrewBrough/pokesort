@@ -24,21 +24,21 @@ npm -v
 
 ## Pull and build
 
-Run the app as its own user, from `/opt/pokesort`, on the `main` branch.
+Run the app as root, from `~/pokesort` (`/root/pokesort`), on the `main` branch.
 
 ```bash
-sudo adduser --disabled-password --gecos "" pokesort
-sudo mkdir -p /opt/pokesort
-sudo chown pokesort:pokesort /opt/pokesort
-sudo -u pokesort -H git clone <repository-url> /opt/pokesort
-sudo -u pokesort -H git -C /opt/pokesort checkout main
-sudo -u pokesort -H git -C /opt/pokesort pull origin main
+git clone <repository-url> ~/pokesort
+git -C ~/pokesort checkout main
+git -C ~/pokesort pull origin main
 ```
 
 Install dependencies in `client` and `server`, then build the client. The client build needs the dev dependencies, so do not use `npm ci --omit=dev`.
 
 ```bash
-sudo -u pokesort -H bash -lc 'cd /opt/pokesort && npm ci --prefix client && npm ci --prefix server && npm run build'
+cd ~/pokesort
+npm ci --prefix client
+npm ci --prefix server
+npm run build
 ```
 
 `npm run build` writes the site to `client/dist`. The server reads that folder when it starts.
@@ -46,7 +46,8 @@ sudo -u pokesort -H bash -lc 'cd /opt/pokesort && npm ci --prefix client && npm 
 Check the build before enabling the service:
 
 ```bash
-sudo -u pokesort -H bash -lc 'cd /opt/pokesort && npm start'
+cd ~/pokesort
+npm start
 ```
 
 `PokeSort listening on 8787` means it is up. Stop it with Ctrl-C, then install the service below.
@@ -62,8 +63,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=pokesort
-WorkingDirectory=/opt/pokesort
+User=root
+WorkingDirectory=/root/pokesort
 Environment=NODE_ENV=production
 Environment=PORT=8787
 ExecStart=/usr/bin/npm start
@@ -74,7 +75,7 @@ RestartSec=3
 WantedBy=multi-user.target
 ```
 
-`NODE_ENV=production` turns off the dev-only money grant. `npm start` also sets that variable.
+`NODE_ENV=production` turns off the dev-only money grant. `npm start` also sets that variable. The unit uses `/root/pokesort` because systemd does not expand `~`. That path is root's `~/pokesort`.
 
 ```bash
 sudo systemctl daemon-reload
@@ -164,10 +165,13 @@ sudo certbot --nginx -d example.com
 
 ```bash
 sudo systemctl stop pokesort
-sudo -u pokesort -H git -C /opt/pokesort fetch origin
-sudo -u pokesort -H git -C /opt/pokesort checkout main
-sudo -u pokesort -H git -C /opt/pokesort pull --ff-only origin main
-sudo -u pokesort -H bash -lc 'cd /opt/pokesort && npm ci --prefix client && npm ci --prefix server && npm run build'
+git -C ~/pokesort fetch origin
+git -C ~/pokesort checkout main
+git -C ~/pokesort pull --ff-only origin main
+cd ~/pokesort
+npm ci --prefix client
+npm ci --prefix server
+npm run build
 sudo systemctl start pokesort
 sudo systemctl status pokesort
 curl -fsS http://127.0.0.1:8787/health
