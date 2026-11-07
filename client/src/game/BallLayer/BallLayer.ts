@@ -1,8 +1,10 @@
 import { Container, Sprite, type Texture } from 'pixi.js'
-import { BALL_ROLL, BALL_SIZE } from '../../data/ball.ts'
+import { BALL_RADIUS } from '../../data/balance.ts'
+import { BALL_ART, BALL_ROLL } from '../../data/ball.ts'
 import type { BinBallSnapshot } from '../../data/messages.ts'
 
-const ROLL_PER_PIXEL = (2 * BALL_ROLL) / BALL_SIZE
+const ROLL_PER_PIXEL = (2 * BALL_ROLL) / BALL_ART.size
+const HIT_REACH = BALL_RADIUS * BALL_RADIUS
 
 type BallSprite = Sprite & { targetX: number; targetY: number; typeIndex: number }
 
@@ -83,7 +85,7 @@ export class BallLayer extends Container {
 
   ballAt(x: number, y: number): string | null {
     let best: string | null = null
-    let bestDist = 22 * 22
+    let bestDist = HIT_REACH
     for (const [id, sprite] of this.sprites) {
       const dx = sprite.x - x
       const dy = sprite.y - y

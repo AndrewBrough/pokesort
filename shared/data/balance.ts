@@ -1,10 +1,10 @@
-import { BALL_SIZE } from './ball.ts'
+import { BALL_ART } from './ball.ts'
 
 export const BIN_CAPACITY = 2500
 export const OVERFLOW_LIMIT_MS = 3000
 export const SIM_STEP_MS = 50
 export const SNAPSHOT_EVERY_STEPS = 2
-export const BALL_RADIUS = 15
+export const BALL_RADIUS = BALL_ART.size / 2
 /** Size and strength each stop here until more levels are added. */
 export const VACUUM_LEVELS = 10
 /** Level 0 is smaller than the original 120px vacuum. Level 10 passes it. */
@@ -13,8 +13,8 @@ export const VACUUM_RADIUS_STEP = 8
 /** Level 0 is slower than the original 360px/s pull. Level 10 passes it. */
 export const VACUUM_PULL_BASE = 160
 export const VACUUM_PULL_STEP = 28
-/** Pointer must sit inside the 32×32 ball before it is picked up. */
-export const VACUUM_CATCH_RADIUS = BALL_SIZE / 2
+/** Pointer must sit on the painted ball before it is picked up. */
+export const VACUUM_CATCH_RADIUS = BALL_RADIUS
 /** Drop a held aim if the client stops sending it. */
 export const VACUUM_AIM_MS = 200
 /** Ball-on-ball hits slower than this (px/s) stay silent. */

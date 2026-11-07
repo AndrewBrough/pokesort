@@ -64,9 +64,9 @@
   height: var(--ball-size);
   flex: 0 0 var(--ball-size);
   background-image: url('/pokeballs_emerald.png');
-  background-size: calc(var(--ball-size) * 4) calc(var(--ball-size) * 4);
+  background-size: calc(var(--ball-size) / var(--art-size) * var(--cell) * var(--sheet));
   background-position:
-    calc(var(--ball-col, 0) * var(--ball-size) * -1)
-    calc(var(--ball-row, 0) * var(--ball-size) * -1);
+    calc((var(--ball-col, 0) * var(--cell) + var(--art-x)) * var(--ball-size) / var(--art-size) * -1)
+    calc((var(--ball-row, 0) * var(--cell) + var(--art-y)) * var(--ball-size) / var(--art-size) * -1);
   image-rendering: pixelated;
 }

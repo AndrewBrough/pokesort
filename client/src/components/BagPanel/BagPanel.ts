@@ -1,5 +1,5 @@
 import './BagPanel.css'
-import { SHEET_COLUMNS, ballByIndex } from '../../data/ball.ts'
+import { BALL_ART, BALL_SIZE, SHEET_COLUMNS, ballByIndex } from '../../data/ball.ts'
 import type { BagBallSnapshot } from '../../data/messages.ts'
 
 export type BagPanelProps = {
@@ -45,6 +45,11 @@ export function mountBagPanel(parent: HTMLElement, onDrop: (ballId: string) => v
         sprite.className = 'bag-panel__sprite'
         sprite.style.setProperty('--ball-col', String(ball.typeIndex % SHEET_COLUMNS))
         sprite.style.setProperty('--ball-row', String(Math.floor(ball.typeIndex / SHEET_COLUMNS)))
+        sprite.style.setProperty('--art-x', String(BALL_ART.x))
+        sprite.style.setProperty('--art-y', String(BALL_ART.y))
+        sprite.style.setProperty('--art-size', String(BALL_ART.size))
+        sprite.style.setProperty('--cell', String(BALL_SIZE))
+        sprite.style.setProperty('--sheet', String(SHEET_COLUMNS))
         const name = document.createElement('span')
         name.className = 'bag-panel__name'
         name.textContent = type.shortName

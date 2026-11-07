@@ -10,6 +10,8 @@ export type BallType = {
 
 export const BALL_SIZE = 32
 export const SHEET_COLUMNS = 4
+/** Painted pixels inside every 32px cell. The ball sits low in the cell. */
+export const BALL_ART = { x: 6, y: 10, size: 20 } as const
 
 export const BALL_TYPES: readonly BallType[] = [
   { index: 0, name: 'Poké Ball', shortName: 'Poké', value: 100, accent: 0xe06040 },
