@@ -1,9 +1,10 @@
-import { VACUUM_LEVELS } from '../../data/balance.ts'
+import { VACUUM_LEVELS, nextBagGain } from '../../data/balance.ts'
 import { visibleUpgrades, type UpgradeDef } from '../../data/upgrades.ts'
 import { formatValue } from '../../format.ts'
 import type { UpgradeButtonProps } from '../UpgradeButton/UpgradeButton.ts'
 
 export type UpgradeBarProps = {
+  bagSize: number
   bagCost: number | null
   vacuumCost: number | null
   vacuumOwned: boolean
@@ -47,7 +48,8 @@ function describe(upgrade: UpgradeDef, props: UpgradeBarProps, broke: boolean): 
     return offer(upgrade, tier.label, props.nextTierName === null || tier.disabled)
   }
   if (upgrade.id === 'bag') {
-    const bag = priced(broke, props.totalValue, props.bagCost, `Your bag slot ${formatValue(props.bagCost ?? 0)}`, 'Your bag is full')
+    const gain = nextBagGain(props.bagSize)
+    const bag = priced(broke, props.totalValue, props.bagCost, `Your bag +${gain} ${formatValue(props.bagCost ?? 0)}`, 'Your bag is full')
     return offer(upgrade, bag.label, bag.disabled)
   }
   if (upgrade.id === 'vacuum') {

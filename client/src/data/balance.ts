@@ -10,4 +10,5 @@ export {
   VACUUM_COST,
   VACUUM_LEVELS,
   nextBagCost,
+  nextBagGain,
 } from '../../../shared/data/balance.ts'

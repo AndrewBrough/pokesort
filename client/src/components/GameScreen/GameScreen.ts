@@ -78,6 +78,7 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
         canDrop: connected && state?.status === 'playing',
       })
       upgrades.update({
+        bagSize: state?.you.bagSize ?? STARTING_BAG,
         bagCost: state?.you.bagCost ?? null,
         vacuumCost: state?.you.vacuumCost ?? null,
         vacuumOwned: state?.you.vacuum ?? false,

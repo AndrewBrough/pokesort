@@ -46,12 +46,25 @@ export const DEV_GRANT = 1000000
 
 export const STARTING_BAG = 3
 export const MAX_BAG = 999
+/** The first this many bag upgrades add one slot. */
+export const BAG_SINGLE_LEVELS = 10
+/** Five-slot upgrades stop once the bag reaches this size. */
+export const BAG_BUNDLE_UNTIL = 50
 export const BAG_BASE_COST = 800
 /** Each extra slot adds half the base price. */
 export const BAG_COST_STEP = 0.5
 
+/** Slots granted by the next bag upgrade. Zero when the bag is full. */
+export function nextBagGain(bagSize: number): number {
+  if (bagSize >= MAX_BAG) return 0
+  const room = MAX_BAG - bagSize
+  if (bagSize < STARTING_BAG + BAG_SINGLE_LEVELS) return 1
+  if (bagSize < BAG_BUNDLE_UNTIL) return Math.min(5, room)
+  return Math.min(10, room)
+}
+
 export function nextBagCost(bagSize: number): number | null {
-  if (bagSize >= MAX_BAG) return null
+  if (nextBagGain(bagSize) === 0) return null
   return BAG_BASE_COST * (1 + BAG_COST_STEP * (bagSize - 1))
 }
 

@@ -1,6 +1,7 @@
 import { ballByIndex, ballUnlockOrder } from '../../shared/data/ball.ts'
 import {
   nextBagCost,
+  nextBagGain,
   BATCH_INTERVAL_MS,
   BIN_CAPACITY,
   DEV_GRANT,
@@ -396,14 +397,15 @@ export function applyAction(session: Session, playerId: string, message: ClientM
 
   if (message.type === 'upgrade') {
     if (message.upgrade === 'bag') {
+      const gain = nextBagGain(player.bagSize)
       const cost = nextBagCost(player.bagSize)
-      if (cost === null) return
+      if (gain === 0 || cost === null) return
       if (session.totalValue < cost) {
         toast(session, 'Not enough value for your bag slot', playerId)
         return
       }
       session.totalValue -= cost
-      player.bagSize += 1
+      player.bagSize += gain
       toast(session, `Your bag holds ${player.bagSize}`, playerId)
       return
     }
