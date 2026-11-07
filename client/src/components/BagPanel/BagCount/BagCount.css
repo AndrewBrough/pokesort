@@ -1,0 +1,33 @@
+.bag-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #f6e7c1;
+  cursor: pointer;
+  font: inherit;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.bag-count__sprite {
+  --ball-size: 24px;
+  width: var(--ball-size);
+  height: var(--ball-size);
+  flex: 0 0 var(--ball-size);
+  background-image: url('/pokeballs_emerald.png');
+  background-repeat: no-repeat;
+  background-size: calc(var(--ball-size) / var(--art-size) * var(--cell) * var(--sheet));
+  background-position:
+    calc((var(--ball-col, 0) * var(--cell) + var(--art-x)) * var(--ball-size) / var(--art-size) * -1)
+    calc((var(--ball-row, 0) * var(--cell) + var(--art-y)) * var(--ball-size) / var(--art-size) * -1);
+  image-rendering: pixelated;
+}
+
+.bag-count__count {
+  white-space: nowrap;
+}

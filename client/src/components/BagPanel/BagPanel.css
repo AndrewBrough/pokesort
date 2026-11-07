@@ -1,72 +1,28 @@
 .bag-panel {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
+  flex-direction: row;
+  align-items: center;
   width: 100%;
   min-width: 0;
-  gap: 4px;
+  gap: 12px;
   color: #f6e7c1;
   pointer-events: auto;
 }
 
 .bag-panel__title {
-  align-self: flex-end;
+  flex: 0 0 auto;
   margin: 0;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
   text-transform: uppercase;
 }
 
-.bag-panel__slots {
+.bag-panel__counts {
   display: flex;
   flex-wrap: wrap;
-  width: 100%;
-  gap: 4px;
-}
-
-.bag-panel__slot {
-  box-sizing: border-box;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  gap: 0;
-  background: #2a2118;
-  color: #8c7760;
-  border: 1px solid #f0d7a8;
-  cursor: pointer;
-  font-size: 7px;
-  line-height: 1;
-}
-
-.bag-panel__slot:disabled {
-  justify-content: center;
-  cursor: default;
-  border-style: dashed;
-  opacity: 0.8;
-}
-
-.bag-panel__name {
-  max-width: 100%;
-  overflow: hidden;
-  color: #f6e7c1;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.bag-panel__sprite {
-  --ball-size: 16px;
-  width: var(--ball-size);
-  height: var(--ball-size);
-  flex: 0 0 var(--ball-size);
-  background-image: url('/pokeballs_emerald.png');
-  background-size: calc(var(--ball-size) / var(--art-size) * var(--cell) * var(--sheet));
-  background-position:
-    calc((var(--ball-col, 0) * var(--cell) + var(--art-x)) * var(--ball-size) / var(--art-size) * -1)
-    calc((var(--ball-row, 0) * var(--cell) + var(--art-y)) * var(--ball-size) / var(--art-size) * -1);
-  image-rendering: pixelated;
+  min-width: 0;
+  gap: 10px;
 }
