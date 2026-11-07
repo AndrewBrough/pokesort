@@ -15,13 +15,13 @@
 }
 
 .bag-panel__slots {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(6, 52px);
   gap: 8px;
-  max-width: 100%;
-  overflow-x: auto;
 }
 
 .bag-panel__slot {
+  box-sizing: border-box;
   width: 52px;
   height: 52px;
   padding: 0;

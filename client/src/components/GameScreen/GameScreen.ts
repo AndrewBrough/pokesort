@@ -2,6 +2,7 @@ import './GameScreen.css'
 import { STARTING_BAG } from '../../data/balance.ts'
 import type { WorldSnapshot } from '../../data/messages.ts'
 import { mountBagPanel, type BagPanelHandle } from '../BagPanel/BagPanel.ts'
+import { mountDevGrant, type DevGrantHandle } from '../DevGrant/DevGrant.ts'
 import { mountGameOver, type GameOverHandle } from '../GameOver/GameOver.ts'
 import { mountNoticeBanner, type NoticeBannerHandle } from '../NoticeBanner/NoticeBanner.ts'
 import { mountToolbar, type ToolbarHandle } from '../Toolbar/Toolbar.ts'
@@ -14,6 +15,7 @@ export type GameScreenHandlers = {
   onTier: () => void
   onRestart: () => void
   onDropBall: (ballId: string) => void
+  onGrant: () => void
 }
 
 export type GameScreenHandle = {
@@ -41,7 +43,10 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
   const bagSlot = document.createElement('div')
   bagSlot.className = 'game-screen__bag'
   dock.append(upgradeSlot, bagSlot)
+  const devSlot = document.createElement('div')
+  devSlot.className = 'game-screen__dev'
   root.append(toolbarSlot, stage, dock)
+  if (import.meta.env.DEV) root.append(devSlot)
   parent.append(root)
 
   const toolbar: ToolbarHandle = mountToolbar(toolbarSlot, handlers.onDropBatch)
@@ -54,6 +59,7 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
   const bag: BagPanelHandle = mountBagPanel(bagSlot, handlers.onDropBall)
   const notice: NoticeBannerHandle = mountNoticeBanner(noticeSlot)
   const gameOver: GameOverHandle = mountGameOver(overSlot, handlers.onRestart)
+  const devGrant: DevGrantHandle | null = import.meta.env.DEV ? mountDevGrant(devSlot, handlers.onGrant) : null
 
   return {
     stage,
@@ -95,6 +101,7 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
       bag.destroy()
       notice.destroy()
       gameOver.destroy()
+      devGrant?.destroy()
       root.remove()
     },
   }

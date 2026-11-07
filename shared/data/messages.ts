@@ -59,6 +59,7 @@ export type ClientMessage =
   | { type: 'drop'; ballId: string }
   | { type: 'dropBatch' }
   | { type: 'upgrade'; upgrade: 'bag' | 'vacuum' | 'tier' }
+  | { type: 'grant' }
   | { type: 'restart' }
 
 export type ServerMessage =

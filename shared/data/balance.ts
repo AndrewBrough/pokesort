@@ -1,5 +1,5 @@
-export const BIN_CAPACITY = 3200
-export const OVERFLOW_LIMIT_MS = 7000
+export const BIN_CAPACITY = 2000
+export const OVERFLOW_LIMIT_MS = 2500
 export const SIM_STEP_MS = 50
 export const SNAPSHOT_EVERY_STEPS = 2
 export const BALL_RADIUS = 15
@@ -21,9 +21,12 @@ export const BATCH_INTERVAL_MS = 14_000
 /** Price of the next tier is its ball value times this factor. */
 export const TIER_COST_FACTOR = 6
 
+/** Dev client only. Production servers ignore the grant message. */
+export const DEV_GRANT = 1000000
+
 export const STARTING_BAG = 3
-export const MAX_BAG = 6
-export const BAG_COSTS = [800, 2000, 4500, 9000, 16000] as const
+export const MAX_BAG = 24
+export const BAG_COSTS = [800, 2000, 4500, 9000, 16000, 32000, 64000, 128000, 256000, 512000, 1024000, 2048000, 4096000, 8192000] as const
 
 export function nextBagCost(bagSize: number): number | null {
   if (bagSize >= MAX_BAG) return null

@@ -3,6 +3,7 @@ import {
   BAG_COSTS,
   BATCH_INTERVAL_MS,
   BIN_CAPACITY,
+  DEV_GRANT,
   DROP_RATE,
   MAX_BAG,
   STARTING_BAG,
@@ -237,6 +238,11 @@ function takeIntoBag(session: Session, playerId: string, ball: Ball): boolean {
 export function applyAction(session: Session, playerId: string, message: ClientMessage): void {
   const player = session.players.get(playerId)
   if (!player) return
+  if (message.type === 'grant') {
+    if (process.env.NODE_ENV === 'production') return
+    session.totalValue += DEV_GRANT
+    return
+  }
   if (message.type === 'restart') {
     beginRun(session)
     toast(session, 'New shipment. Shelves restocked.', null)

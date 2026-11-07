@@ -19,6 +19,7 @@ export async function mountGame(root: HTMLElement): Promise<void> {
     onTier: () => send({ type: 'upgrade', upgrade: 'tier' }),
     onRestart: () => send({ type: 'restart' }),
     onDropBall: (ballId) => send({ type: 'drop', ballId }),
+    onGrant: () => send({ type: 'grant' }),
   })
 
   const connection = connectSocket(
