@@ -12,6 +12,8 @@ export function createUnloadHold(): UnloadHold {
   let holding = false
   let pending = 0
   let elapsed = 0
+  let sinceShot = Number.POSITIVE_INFINITY
+  let prime = false
   let cursor = 0
 
   const add = (index: number) => {
@@ -23,11 +25,15 @@ export function createUnloadHold(): UnloadHold {
     cursor = 0
     elapsed = 0
     pending = 0
+    prime = false
   }
 
   return {
     down(index) {
-      if (!holding) pending += 1
+      if (!holding) {
+        pending += 1
+        prime = true
+      }
       holding = true
       add(index)
     },
@@ -43,15 +49,23 @@ export function createUnloadHold(): UnloadHold {
     },
     active: () => shelves,
     step(dtMs, intervalMs, place, miss) {
+      sinceShot += dtMs
       if (shelves.length === 0) return
       if (!holding && pending <= 0) {
         clear()
         return
       }
       elapsed += dtMs
-      if (intervalMs > 0 && elapsed < intervalMs) return
+      const cooled = intervalMs <= 0 || sinceShot >= intervalMs
+      if (prime) {
+        if (!cooled) return
+      } else if (intervalMs > 0 && elapsed < intervalMs) {
+        return
+      }
+      prime = false
       if (pending > 0) pending -= 1
-      elapsed = intervalMs > 0 ? elapsed - intervalMs : 0
+      elapsed = 0
+      sinceShot = 0
       let placed = false
       for (let n = 0; n < shelves.length; n++) {
         const shelf = shelves[cursor % shelves.length]
