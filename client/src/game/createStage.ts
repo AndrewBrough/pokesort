@@ -94,7 +94,7 @@ export async function createStage(
         ? new Set(state.you.bag.map((ball) => ball.typeIndex))
         : new Set<number>()
       shelves.sync(state.shelves, hintTypes)
-      balls.sync(state.bin)
+      balls.sync(state.bin, state.binRemoved)
       fullness.update({
         percent: Math.round(state.fullness * 100),
         overflowing: state.fullness > 1,

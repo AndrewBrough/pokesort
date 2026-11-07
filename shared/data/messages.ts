@@ -64,7 +64,10 @@ export type WorldSnapshot = {
   toast: ToastSnapshot | null
   nextTier: NextTierSnapshot | null
   shelves: ShelfSnapshot[]
+  /** Balls that appeared or moved since this client's previous snapshot. */
   bin: BinBallSnapshot[]
+  /** Bin balls this client should drop. Absent from `bin` does not mean removed. */
+  binRemoved: string[]
   cursors: CursorSnapshot[]
   you: PlayerSnapshot
 }

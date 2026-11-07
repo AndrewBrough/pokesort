@@ -7,7 +7,7 @@ import { SIM_STEP_MS, SNAPSHOT_EVERY_STEPS, STARTING_BAG } from '../../shared/da
 import type { ClientMessage } from '../../shared/data/messages.ts'
 import { applyAction, beginRun, rememberClient, returnBag, tick } from './actions.ts'
 import { createSession, type ClientUpgrades, type Session } from './session.ts'
-import { snapshotFor } from './snapshot.ts'
+import { snapshotFor, type SentBinBall } from './snapshot.ts'
 
 const PORT = Number(process.env.PORT ?? 8787)
 const STATIC_ROOT = resolve(process.env.STATIC_DIR ?? join(import.meta.dirname, '../../client/dist'))
@@ -101,15 +101,22 @@ function upgradesFor(session: Session, clientKey: string | null): ClientUpgrades
   return session.clients.get(clientKey)
 }
 
-function broadcast(session: Session, sockets: Map<WebSocket, string>): void {
+function broadcast(
+  session: Session,
+  sockets: Map<WebSocket, string>,
+  sentBins: Map<WebSocket, Map<string, SentBinBall>>,
+): void {
   for (const [socket, playerId] of sockets) {
-    send(socket, { type: 'state', state: snapshotFor(session, playerId) })
+    const sentBin = sentBins.get(socket)
+    if (!sentBin) continue
+    send(socket, { type: 'state', state: snapshotFor(session, playerId, sentBin) })
   }
 }
 
 export function startServer(): void {
   const session = createSession()
   const sockets = new Map<WebSocket, string>()
+  const sentBins = new Map<WebSocket, Map<string, SentBinBall>>()
   let timer: ReturnType<typeof setInterval> | null = null
   let steps = 0
 
@@ -127,7 +134,7 @@ export function startServer(): void {
       steps += 1
       if (steps >= SNAPSHOT_EVERY_STEPS) {
         steps = 0
-        broadcast(session, sockets)
+        broadcast(session, sockets, sentBins)
       }
     }, SIM_STEP_MS)
   }
@@ -159,8 +166,10 @@ export function startServer(): void {
       beginRun(session)
     }
     sockets.set(socket, id)
+    const sentBin = new Map<string, SentBinBall>()
+    sentBins.set(socket, sentBin)
     send(socket, { type: 'welcome', playerId: id })
-    send(socket, { type: 'state', state: snapshotFor(session, id) })
+    send(socket, { type: 'state', state: snapshotFor(session, id, sentBin) })
     ensureLoop()
 
     socket.on('message', (data) => {
@@ -170,16 +179,17 @@ export function startServer(): void {
       // Aims and cursors are folded into the 10 Hz snapshot. A full copy per packet
       // was most of the bandwidth while someone held the vacuum.
       if (message.type === 'cursor' || message.type === 'vacuum') return
-      broadcast(session, sockets)
+      broadcast(session, sockets, sentBins)
     })
 
     socket.on('close', () => {
       sockets.delete(socket)
+      sentBins.delete(socket)
       rememberClient(session, id)
       returnBag(session, id)
       session.players.delete(id)
       if (session.players.size === 0) stopLoop()
-      else broadcast(session, sockets)
+      else broadcast(session, sockets, sentBins)
     })
   })
 

@@ -11,9 +11,34 @@ import {
   tierUnlockCost,
   vacuumRadius,
 } from '../../shared/data/balance.ts'
-import type { ToastSnapshot, WorldSnapshot } from '../../shared/data/messages.ts'
+import type { BinBallSnapshot, ToastSnapshot, WorldSnapshot } from '../../shared/data/messages.ts'
 import type { Session } from './session.ts'
 import { binCount } from './actions.ts'
+
+function takeBinDelta(
+  session: Session,
+  sent: Map<string, SentBinBall>,
+): { bin: BinBallSnapshot[]; binRemoved: string[] } {
+  const bin: BinBallSnapshot[] = []
+  const live = new Set<string>()
+  for (const ball of session.balls.values()) {
+    if (ball.where !== 'bin') continue
+    live.add(ball.id)
+    const x = Math.round(ball.x)
+    const y = Math.round(ball.y)
+    const previous = sent.get(ball.id)
+    if (previous && previous.x === x && previous.y === y && previous.typeIndex === ball.typeIndex) continue
+    sent.set(ball.id, { typeIndex: ball.typeIndex, x, y })
+    bin.push({ id: ball.id, typeIndex: ball.typeIndex, x, y })
+  }
+  const binRemoved: string[] = []
+  for (const id of sent.keys()) {
+    if (live.has(id)) continue
+    sent.delete(id)
+    binRemoved.push(id)
+  }
+  return { bin, binRemoved }
+}
 
 function otherCursors(session: Session, playerId: string): { id: string; x: number; y: number }[] {
   const cursors = []
@@ -33,20 +58,22 @@ function toastOf(session: Session, playerId: string): ToastSnapshot | null {
   return { id: chosen.id, text: chosen.text }
 }
 
-export function snapshotFor(session: Session, playerId: string): WorldSnapshot {
+export type SentBinBall = {
+  typeIndex: number
+  x: number
+  y: number
+}
+
+/** Records what this client already has so the next snapshot can send only changes. */
+export function snapshotFor(
+  session: Session,
+  playerId: string,
+  sentBin: Map<string, SentBinBall>,
+): WorldSnapshot {
   const player = session.players.get(playerId)
   const nextIndex = ballUnlockOrder()[session.unlockedTypes.length]
   const nextBall = nextIndex === undefined ? null : ballByIndex(nextIndex)
-  const bin = []
-  for (const ball of session.balls.values()) {
-    if (ball.where !== 'bin') continue
-    bin.push({
-      id: ball.id,
-      typeIndex: ball.typeIndex,
-      x: Math.round(ball.x),
-      y: Math.round(ball.y),
-    })
-  }
+  const { bin, binRemoved } = takeBinDelta(session, sentBin)
   return {
     totalValue: session.totalValue,
     sessionMs: session.sessionMs,
@@ -64,6 +91,7 @@ export function snapshotFor(session: Session, playerId: string): WorldSnapshot {
       filled: shelf.slots.reduce((count, id) => count + (id ? 1 : 0), 0),
     })),
     bin,
+    binRemoved,
     cursors: otherCursors(session, playerId),
     you: {
       bag: (player?.bag ?? []).flatMap((id) => {

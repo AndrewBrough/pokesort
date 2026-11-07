@@ -18,10 +18,8 @@ export class BallLayer extends Container {
     this.sortableChildren = true
   }
 
-  sync(balls: readonly BinBallSnapshot[]): void {
-    const seen = new Set<string>()
+  sync(balls: readonly BinBallSnapshot[], removed: readonly string[]): void {
     for (const ball of balls) {
-      seen.add(ball.id)
       let sprite = this.sprites.get(ball.id)
       if (!sprite) {
         sprite = new Sprite(this.textures[ball.typeIndex] ?? this.textures[0]) as BallSprite
@@ -38,8 +36,9 @@ export class BallLayer extends Container {
       sprite.targetX = ball.x
       sprite.targetY = ball.y
     }
-    for (const [id, sprite] of this.sprites) {
-      if (seen.has(id)) continue
+    for (const id of removed) {
+      const sprite = this.sprites.get(id)
+      if (!sprite) continue
       sprite.destroy()
       this.sprites.delete(id)
     }
