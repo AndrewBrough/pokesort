@@ -1,7 +1,7 @@
 import { BALL_SIZE } from './ball.ts'
 
-export const BIN_CAPACITY = 2000
-export const OVERFLOW_LIMIT_MS = 2500
+export const BIN_CAPACITY = 2500
+export const OVERFLOW_LIMIT_MS = 3000
 export const SIM_STEP_MS = 50
 export const SNAPSHOT_EVERY_STEPS = 2
 export const BALL_RADIUS = 15
@@ -27,12 +27,14 @@ export const TIER_COST_FACTOR = 6
 export const DEV_GRANT = 1000000
 
 export const STARTING_BAG = 3
-export const MAX_BAG = 24
+export const MAX_BAG = 999
 export const BAG_BASE_COST = 800
+/** Each extra slot adds half the base price. */
+export const BAG_COST_STEP = 0.5
 
 export function nextBagCost(bagSize: number): number | null {
   if (bagSize >= MAX_BAG) return null
-  return BAG_BASE_COST * 2 ** (bagSize - 1)
+  return BAG_BASE_COST * (1 + BAG_COST_STEP * (bagSize - 1))
 }
 
 export function tierUnlockCost(ballValue: number): number {

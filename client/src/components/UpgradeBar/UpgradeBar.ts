@@ -1,4 +1,5 @@
 import './UpgradeBar.css'
+import { DEV_GRANT } from '../../data/balance.ts'
 import { formatValue } from '../../format.ts'
 
 export type UpgradeBarProps = {
@@ -22,63 +23,71 @@ export type UpgradeBarHandle = {
   destroy: () => void
 }
 
+type UpgradeKind = 'Team Upgrade' | 'Individual Upgrade'
+
+function addButton(parent: HTMLElement, kind: UpgradeKind, onClick: () => void): HTMLButtonElement {
+  const button = document.createElement('button')
+  button.type = 'button'
+  button.className = 'upgrade-bar__button'
+  const kindLabel = document.createElement('span')
+  kindLabel.className = 'upgrade-bar__kind'
+  kindLabel.textContent = kind
+  const label = document.createElement('span')
+  label.className = 'upgrade-bar__label'
+  button.append(kindLabel, label)
+  button.addEventListener('click', onClick)
+  parent.append(button)
+  return button
+}
+
+function setLabel(button: HTMLButtonElement, text: string, disabled: boolean): void {
+  const label = button.querySelector('.upgrade-bar__label')
+  if (label) label.textContent = text
+  button.disabled = disabled
+}
+
 export function mountUpgradeBar(
   parent: HTMLElement,
   onBag: () => void,
   onVacuum: () => void,
   onTier: () => void,
   onHint: () => void,
+  onGrant: (() => void) | null,
 ): UpgradeBarHandle {
   const root = document.createElement('section')
   root.className = 'upgrade-bar'
-  const tier = document.createElement('button')
-  tier.type = 'button'
-  tier.className = 'upgrade-bar__button'
-  tier.addEventListener('click', onTier)
-  const bag = document.createElement('button')
-  bag.type = 'button'
-  bag.className = 'upgrade-bar__button'
-  bag.addEventListener('click', onBag)
-  const vacuum = document.createElement('button')
-  vacuum.type = 'button'
-  vacuum.className = 'upgrade-bar__button'
-  vacuum.addEventListener('click', onVacuum)
-  const hint = document.createElement('button')
-  hint.type = 'button'
-  hint.className = 'upgrade-bar__button'
-  hint.addEventListener('click', onHint)
-  root.append(tier, bag, vacuum, hint)
+  const tier = addButton(root, 'Team Upgrade', onTier)
+  const bag = addButton(root, 'Individual Upgrade', onBag)
+  const vacuum = addButton(root, 'Individual Upgrade', onVacuum)
+  const hint = addButton(root, 'Individual Upgrade', onHint)
+  if (onGrant) {
+    const grant = addButton(root, 'Team Upgrade', onGrant)
+    setLabel(grant, `Add ${DEV_GRANT}`, false)
+  }
   parent.append(root)
 
   return {
     update(props) {
+      const broke = !props.enabled
       if (props.nextTierName === null || props.nextTierCost === null) {
-        tier.textContent = 'All balls unlocked'
-        tier.disabled = true
+        setLabel(tier, 'All balls unlocked', true)
       } else {
-        tier.textContent = `Unlock ${props.nextTierName} ${formatValue(props.nextTierCost)}`
-        tier.disabled = !props.enabled || props.totalValue < props.nextTierCost
+        setLabel(tier, `Unlock ${props.nextTierName} ${formatValue(props.nextTierCost)}`, broke || props.totalValue < props.nextTierCost)
       }
       if (props.bagCost === null) {
-        bag.textContent = 'Your bag is full'
-        bag.disabled = true
+        setLabel(bag, 'Your bag is full', true)
       } else {
-        bag.textContent = `Your bag slot ${formatValue(props.bagCost)}`
-        bag.disabled = !props.enabled || props.totalValue < props.bagCost
+        setLabel(bag, `Your bag slot ${formatValue(props.bagCost)}`, broke || props.totalValue < props.bagCost)
       }
       if (props.vacuumOwned) {
-        vacuum.textContent = 'Vacuum ready'
-        vacuum.disabled = true
+        setLabel(vacuum, 'Vacuum ready', true)
       } else {
-        vacuum.textContent = `Vacuum ${formatValue(props.vacuumCost ?? 0)}`
-        vacuum.disabled = !props.enabled || props.totalValue < (props.vacuumCost ?? Number.POSITIVE_INFINITY)
+        setLabel(vacuum, `Vacuum ${formatValue(props.vacuumCost ?? 0)}`, broke || props.totalValue < (props.vacuumCost ?? Number.POSITIVE_INFINITY))
       }
       if (props.shelfHintOwned) {
-        hint.textContent = 'Shelves marked'
-        hint.disabled = true
+        setLabel(hint, 'Shelves marked', true)
       } else {
-        hint.textContent = `Mark shelves ${formatValue(props.shelfHintCost ?? 0)}`
-        hint.disabled = !props.enabled || props.totalValue < (props.shelfHintCost ?? Number.POSITIVE_INFINITY)
+        setLabel(hint, `Mark shelves ${formatValue(props.shelfHintCost ?? 0)}`, broke || props.totalValue < (props.shelfHintCost ?? Number.POSITIVE_INFINITY))
       }
     },
     destroy() {

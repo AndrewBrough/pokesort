@@ -1,5 +1,5 @@
 import './BagPanel.css'
-import { BALL_SIZE, SHEET_COLUMNS, ballByIndex } from '../../data/ball.ts'
+import { SHEET_COLUMNS, ballByIndex } from '../../data/ball.ts'
 import type { BagBallSnapshot } from '../../data/messages.ts'
 
 export type BagPanelProps = {
@@ -43,9 +43,8 @@ export function mountBagPanel(parent: HTMLElement, onDrop: (ballId: string) => v
         button.setAttribute('aria-label', `Drop ${type.name} into the bin`)
         const sprite = document.createElement('span')
         sprite.className = 'bag-panel__sprite'
-        const column = ball.typeIndex % SHEET_COLUMNS
-        const row = Math.floor(ball.typeIndex / SHEET_COLUMNS)
-        sprite.style.backgroundPosition = `${-column * BALL_SIZE}px ${-row * BALL_SIZE}px`
+        sprite.style.setProperty('--ball-col', String(ball.typeIndex % SHEET_COLUMNS))
+        sprite.style.setProperty('--ball-row', String(Math.floor(ball.typeIndex / SHEET_COLUMNS)))
         const name = document.createElement('span')
         name.className = 'bag-panel__name'
         name.textContent = type.shortName

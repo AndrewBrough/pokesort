@@ -1,12 +1,15 @@
 .bag-panel {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
   gap: 4px;
   color: #f6e7c1;
 }
 
 .bag-panel__title {
+  align-self: flex-end;
   margin: 0;
   font-size: 13px;
   font-weight: 700;
@@ -15,26 +18,27 @@
 }
 
 .bag-panel__slots {
-  display: grid;
-  grid-template-columns: repeat(6, 52px);
-  gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 4px;
 }
 
 .bag-panel__slot {
   box-sizing: border-box;
-  width: 52px;
-  height: 52px;
-  padding: 2px 1px 3px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  gap: 1px;
+  gap: 0;
   background: #2a2118;
   color: #8c7760;
-  border: 2px solid #f0d7a8;
+  border: 1px solid #f0d7a8;
   cursor: pointer;
-  font-size: 9px;
+  font-size: 7px;
   line-height: 1;
 }
 
@@ -54,9 +58,14 @@
 }
 
 .bag-panel__sprite {
-  width: 32px;
-  height: 32px;
+  --ball-size: 16px;
+  width: var(--ball-size);
+  height: var(--ball-size);
+  flex: 0 0 var(--ball-size);
   background-image: url('/pokeballs_emerald.png');
-  background-size: 128px 128px;
+  background-size: calc(var(--ball-size) * 4) calc(var(--ball-size) * 4);
+  background-position:
+    calc(var(--ball-col, 0) * var(--ball-size) * -1)
+    calc(var(--ball-row, 0) * var(--ball-size) * -1);
   image-rendering: pixelated;
 }
