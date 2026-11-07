@@ -1,9 +1,4 @@
-import {
-  BALL_RADIUS,
-  VACUUM_CATCH_RADIUS,
-  VACUUM_PULL_SPEED,
-  VACUUM_RADIUS,
-} from '../../shared/data/balance.ts'
+import { BALL_RADIUS, VACUUM_CATCH_RADIUS } from '../../shared/data/balance.ts'
 import { BIN } from '../../shared/data/layout.ts'
 import type { Ball } from './session.ts'
 
@@ -12,6 +7,8 @@ export type VacuumPull = {
   x: number
   y: number
   types: ReadonlySet<number>
+  radius: number
+  speed: number
 }
 
 export type VacuumCatch = {
@@ -53,16 +50,15 @@ function separate(a: Ball, b: Ball, rest: number): void {
 
 function nearestPull(ball: Ball, pulls: readonly VacuumPull[]): VacuumPull | null {
   let best: VacuumPull | null = null
-  let bestDist = VACUUM_RADIUS * VACUUM_RADIUS
+  let bestDist = Number.POSITIVE_INFINITY
   for (const pull of pulls) {
     if (!pull.types.has(ball.typeIndex)) continue
     const dx = pull.x - ball.x
     const dy = pull.y - ball.y
     const dist = dx * dx + dy * dy
-    if (dist <= bestDist) {
-      best = pull
-      bestDist = dist
-    }
+    if (dist > pull.radius * pull.radius || dist > bestDist) continue
+    best = pull
+    bestDist = dist
   }
   return best
 }
@@ -139,7 +135,7 @@ export function stepBin(
     const dy = pull.y - ball.y
     const dist = Math.hypot(dx, dy)
     if (dist > 0.01) {
-      const step = Math.min(VACUUM_PULL_SPEED * dt, dist)
+      const step = Math.min(pull.speed * dt, dist)
       ball.x += (dx / dist) * step
       ball.y += (dy / dist) * step
     }

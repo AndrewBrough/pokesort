@@ -1,5 +1,4 @@
 import { Container, Sprite, type Texture } from 'pixi.js'
-import { VACUUM_RADIUS } from '../../data/balance.ts'
 import type { BinBallSnapshot } from '../../data/messages.ts'
 
 type BallSprite = Sprite & { targetX: number; targetY: number; typeIndex: number }
@@ -62,8 +61,8 @@ export class BallLayer extends Container {
     }
   }
 
-  vacuumTargets(x: number, y: number, types: ReadonlySet<number>): VacuumTarget[] {
-    const reach = VACUUM_RADIUS * VACUUM_RADIUS
+  vacuumTargets(x: number, y: number, types: ReadonlySet<number>, radius: number): VacuumTarget[] {
+    const reach = radius * radius
     const found: { x: number; y: number; dist: number }[] = []
     for (const sprite of this.sprites.values()) {
       if (!types.has(sprite.typeIndex)) continue

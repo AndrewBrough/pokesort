@@ -1,3 +1,5 @@
+import type { UpgradeId } from './upgrades.ts'
+
 export type WorldStatus = 'playing' | 'overflow'
 
 export type ShelfSnapshot = {
@@ -28,9 +30,15 @@ export type PlayerSnapshot = {
   bag: BagBallSnapshot[]
   bagSize: number
   vacuum: boolean
+  vacuumSize: number
+  vacuumStrength: number
   shelfHint: boolean
   bagCost: number | null
   vacuumCost: number | null
+  vacuumSizeCost: number | null
+  vacuumStrengthCost: number | null
+  /** Pull radius for the current size level, in world pixels. */
+  vacuumReach: number
   shelfHintCost: number | null
 }
 
@@ -60,7 +68,7 @@ export type ClientMessage =
   | { type: 'deposit'; shelfIndex: number }
   | { type: 'drop'; ballId: string }
   | { type: 'dropBatch' }
-  | { type: 'upgrade'; upgrade: 'bag' | 'vacuum' | 'tier' | 'hint' }
+  | { type: 'upgrade'; upgrade: UpgradeId }
   | { type: 'grant' }
   | { type: 'restart' }
 

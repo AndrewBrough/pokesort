@@ -15,6 +15,7 @@ export type VacuumAimProps = {
   cursorX: number
   cursorY: number
   types: ReadonlySet<number>
+  radius: number
 }
 
 export type StageHandle = {
@@ -98,8 +99,10 @@ export async function createStage(
     ballAt: (x, y) => balls.ballAt(x, y),
     shelfAt: (x, y) => shelves.shelfAt(x, y),
     showVacuum: (props) => {
-      const targets = props.active ? balls.vacuumTargets(props.cursorX, props.cursorY, props.types) : []
-      range.update({ visible: props.rangeVisible, x: props.cursorX, y: props.cursorY })
+      const targets = props.active
+        ? balls.vacuumTargets(props.cursorX, props.cursorY, props.types, props.radius)
+        : []
+      range.update({ visible: props.rangeVisible, x: props.cursorX, y: props.cursorY, radius: props.radius })
       vacuum.update({
         active: props.active,
         cursorX: props.cursorX,

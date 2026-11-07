@@ -1,6 +1,7 @@
 import './GameScreen.css'
 import { STARTING_BAG } from '../../data/balance.ts'
 import type { WorldSnapshot } from '../../data/messages.ts'
+import type { UpgradeId } from '../../data/upgrades.ts'
 import { mountBagPanel, type BagPanelHandle } from '../BagPanel/BagPanel.ts'
 import { mountGameOver, type GameOverHandle } from '../GameOver/GameOver.ts'
 import { mountNoticeBanner, type NoticeBannerHandle } from '../NoticeBanner/NoticeBanner.ts'
@@ -9,10 +10,7 @@ import { mountUpgradeBar, type UpgradeBarHandle } from '../UpgradeBar/UpgradeBar
 
 export type GameScreenHandlers = {
   onDropBatch: () => void
-  onBag: () => void
-  onVacuum: () => void
-  onTier: () => void
-  onHint: () => void
+  onUpgrade: (upgrade: UpgradeId) => void
   onRestart: () => void
   onDropBall: (ballId: string) => void
   onGrant: () => void
@@ -49,10 +47,7 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
   const toolbar: ToolbarHandle = mountToolbar(toolbarSlot, handlers.onDropBatch)
   const upgrades: UpgradeBarHandle = mountUpgradeBar(
     upgradeSlot,
-    handlers.onBag,
-    handlers.onVacuum,
-    handlers.onTier,
-    handlers.onHint,
+    handlers.onUpgrade,
     import.meta.env.DEV ? handlers.onGrant : null,
   )
   const bag: BagPanelHandle = mountBagPanel(bagSlot, handlers.onDropBall)
@@ -77,16 +72,16 @@ export function mountGameScreen(parent: HTMLElement, handlers: GameScreenHandler
         bagCost: state?.you.bagCost ?? null,
         vacuumCost: state?.you.vacuumCost ?? null,
         vacuumOwned: state?.you.vacuum ?? false,
+        vacuumSize: state?.you.vacuumSize ?? 0,
+        vacuumStrength: state?.you.vacuumStrength ?? 0,
+        vacuumSizeCost: state?.you.vacuumSizeCost ?? null,
+        vacuumStrengthCost: state?.you.vacuumStrengthCost ?? null,
         shelfHintOwned: state?.you.shelfHint ?? false,
         shelfHintCost: state?.you.shelfHintCost ?? null,
         nextTierName: state?.nextTier?.name ?? null,
         nextTierCost: state?.nextTier?.cost ?? null,
         totalValue: state?.totalValue ?? 0,
         enabled: connected && state?.status === 'playing',
-        onBag: handlers.onBag,
-        onVacuum: handlers.onVacuum,
-        onTier: handlers.onTier,
-        onHint: handlers.onHint,
       })
       bag.update({
         balls: state?.you.bag ?? [],

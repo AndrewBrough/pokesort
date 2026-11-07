@@ -6,6 +6,6 @@ export {
   DEV_GRANT,
   STARTING_BAG,
   VACUUM_COST,
-  VACUUM_RADIUS,
+  VACUUM_LEVELS,
   nextBagCost,
 } from '../../../shared/data/balance.ts'

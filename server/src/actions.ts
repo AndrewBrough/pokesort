@@ -10,12 +10,17 @@ import {
   VACUUM_AIM_MS,
   SHELF_HINT_COST,
   VACUUM_COST,
+  nextVacuumSizeCost,
+  nextVacuumStrengthCost,
   tierUnlockCost,
+  vacuumPullSpeed,
+  vacuumRadius,
 } from '../../shared/data/balance.ts'
 import { BIN, SHELF_CAPACITY, SHELF_FRAMES, SHELF_INDEX_MAX } from '../../shared/data/layout.ts'
 import type { ClientMessage } from '../../shared/data/messages.ts'
+import { visibleUpgrades, type UpgradeId, type UpgradeLevels } from '../../shared/data/upgrades.ts'
 import { stepBin, type VacuumPull } from './physics.ts'
-import type { Ball, Session, Shelf } from './session.ts'
+import type { Ball, Player, Session, Shelf } from './session.ts'
 
 function toast(session: Session, text: string, playerId: string | null): void {
   const next = { id: ++session.toastSeq, text, ttl: 2800 }
@@ -64,6 +69,8 @@ export function beginRun(session: Session): void {
     player.bag = []
     player.bagSize = STARTING_BAG
     player.vacuum = false
+    player.vacuumSize = 0
+    player.vacuumStrength = 0
     player.shelfHint = false
     player.vacuumAim = null
     player.toast = null
@@ -194,6 +201,8 @@ export function rememberClient(session: Session, playerId: string): void {
   session.clients.set(player.clientKey, {
     bagSize: player.bagSize,
     vacuum: player.vacuum,
+    vacuumSize: player.vacuumSize,
+    vacuumStrength: player.vacuumStrength,
     shelfHint: player.shelfHint,
   })
 }
@@ -227,7 +236,14 @@ function vacuumPulls(session: Session): VacuumPull[] {
       if (typeIndex !== undefined) types.add(typeIndex)
     }
     if (types.size === 0) continue
-    pulls.push({ playerId: player.id, x: aim.x, y: aim.y, types })
+    pulls.push({
+      playerId: player.id,
+      x: aim.x,
+      y: aim.y,
+      types,
+      radius: vacuumRadius(player.vacuumSize),
+      speed: vacuumPullSpeed(player.vacuumStrength),
+    })
   }
   return pulls
 }
@@ -333,14 +349,18 @@ export function applyAction(session: Session, playerId: string, message: ClientM
       toast(session, 'Shelf marks on. Matching shelves light up.', playerId)
       return
     }
-    if (message.upgrade !== 'vacuum' || player.vacuum) return
+    if (message.upgrade === 'vacuumSize' || message.upgrade === 'vacuumStrength') {
+      buyVacuumStat(session, player, message.upgrade)
+      return
+    }
+    if (message.upgrade !== 'vacuum' || !upgradeOffered(player, 'vacuum')) return
     if (session.totalValue < VACUUM_COST) {
       toast(session, 'Not enough value for the vacuum', playerId)
       return
     }
     session.totalValue -= VACUUM_COST
     player.vacuum = true
-    toast(session, 'Vacuum online. Hold to pull matching balls.', playerId)
+    toast(session, 'Vacuum online. Size and strength are ready.', playerId)
     return
   }
 
@@ -369,4 +389,34 @@ export function applyAction(session: Session, playerId: string, message: ClientM
 
 function shelfName(shelf: Shelf): string {
   return ballByIndex(shelf.typeIndex).shortName
+}
+
+function levelsOf(player: Player): UpgradeLevels {
+  return {
+    vacuum: player.vacuum ? 1 : 0,
+    vacuumSize: player.vacuumSize,
+    vacuumStrength: player.vacuumStrength,
+    hint: player.shelfHint ? 1 : 0,
+  }
+}
+
+function upgradeOffered(player: Player, id: UpgradeId): boolean {
+  return visibleUpgrades(levelsOf(player)).some((upgrade) => upgrade.id === id)
+}
+
+function buyVacuumStat(session: Session, player: Player, upgrade: 'vacuumSize' | 'vacuumStrength'): void {
+  if (!upgradeOffered(player, upgrade)) return
+  const level = upgrade === 'vacuumSize' ? player.vacuumSize : player.vacuumStrength
+  const cost = upgrade === 'vacuumSize' ? nextVacuumSizeCost(level) : nextVacuumStrengthCost(level)
+  if (cost === null) return
+  const name = upgrade === 'vacuumSize' ? 'Vacuum size' : 'Vacuum strength'
+  if (session.totalValue < cost) {
+    toast(session, `Not enough value for ${name.toLowerCase()}`, player.id)
+    return
+  }
+  session.totalValue -= cost
+  if (upgrade === 'vacuumSize') player.vacuumSize += 1
+  else player.vacuumStrength += 1
+  const next = upgrade === 'vacuumSize' ? player.vacuumSize : player.vacuumStrength
+  toast(session, `${name} ${next}`, player.id)
 }

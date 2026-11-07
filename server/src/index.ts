@@ -146,6 +146,8 @@ export function startServer(): void {
       bag: [],
       bagSize: saved?.bagSize ?? STARTING_BAG,
       vacuum: saved?.vacuum ?? false,
+      vacuumSize: saved?.vacuumSize ?? 0,
+      vacuumStrength: saved?.vacuumStrength ?? 0,
       shelfHint: saved?.shelfHint ?? false,
       vacuumAim: null,
       toast: null,

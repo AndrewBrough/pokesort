@@ -16,10 +16,7 @@ export async function mountGame(root: HTMLElement): Promise<void> {
   const send = (message: ClientMessage) => connection.send(message)
   const screen = mountGameScreen(root, {
     onDropBatch: () => send({ type: 'dropBatch' }),
-    onBag: () => send({ type: 'upgrade', upgrade: 'bag' }),
-    onVacuum: () => send({ type: 'upgrade', upgrade: 'vacuum' }),
-    onTier: () => send({ type: 'upgrade', upgrade: 'tier' }),
-    onHint: () => send({ type: 'upgrade', upgrade: 'hint' }),
+    onUpgrade: (upgrade) => send({ type: 'upgrade', upgrade }),
     onRestart: () => send({ type: 'restart' }),
     onDropBall: (ballId) => send({ type: 'drop', ballId }),
     onGrant: () => send({ type: 'grant' }),
@@ -55,6 +52,7 @@ export async function mountGame(root: HTMLElement): Promise<void> {
       cursorX: pointer.x,
       cursorY: pointer.y,
       types: new Set(you?.bag.map((ball) => ball.typeIndex) ?? []),
+      radius: you?.vacuumReach ?? 0,
     })
   })
 
