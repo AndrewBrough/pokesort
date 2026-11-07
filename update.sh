@@ -2,9 +2,8 @@
 set -euo pipefail
 
 sudo systemctl stop pokesort
-git -C ~/pokesort fetch origin
 git -C ~/pokesort checkout main
-git -C ~/pokesort pull --ff-only origin main
+git -C ~/pokesort pull
 cd ~/pokesort
 npm ci --prefix client
 npm ci --prefix server
