@@ -4,7 +4,14 @@ export const SIM_STEP_MS = 50
 export const SNAPSHOT_EVERY_STEPS = 2
 export const BALL_RADIUS = 15
 export const VACUUM_RADIUS = 120
-export const VACUUM_COOLDOWN_MS = 130
+/** How fast a pulled ball slides toward the pointer, in pixels per second. */
+export const VACUUM_PULL_SPEED = 360
+/** Pointer is on the ball sprite once it is inside this half-size. */
+export const VACUUM_CATCH_RADIUS = 16
+/** Drop a held aim if the client stops sending it. */
+export const VACUUM_AIM_MS = 200
+/** Particle streams are drawn for this many nearest matching balls. */
+export const VACUUM_STREAM_BALLS = 4
 export const VACUUM_COST = 3500
 
 /** Every unlocked ball type drops this many balls each batch. */

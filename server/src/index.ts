@@ -131,7 +131,7 @@ export function startServer(): void {
       bag: [],
       bagSize: STARTING_BAG,
       vacuum: false,
-      vacuumAt: 0,
+      vacuumAim: null,
       toast: null,
     })
     if (!session.live) {

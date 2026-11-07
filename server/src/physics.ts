@@ -1,6 +1,23 @@
-import { BALL_RADIUS } from '../../shared/data/balance.ts'
+import {
+  BALL_RADIUS,
+  VACUUM_CATCH_RADIUS,
+  VACUUM_PULL_SPEED,
+  VACUUM_RADIUS,
+} from '../../shared/data/balance.ts'
 import { BIN } from '../../shared/data/layout.ts'
 import type { Ball } from './session.ts'
+
+export type VacuumPull = {
+  playerId: string
+  x: number
+  y: number
+  types: ReadonlySet<number>
+}
+
+export type VacuumCatch = {
+  id: string
+  playerId: string
+}
 
 function separate(a: Ball, b: Ball, rest: number): void {
   let dx = b.x - a.x
@@ -34,8 +51,34 @@ function separate(a: Ball, b: Ball, rest: number): void {
   }
 }
 
+function nearestPull(ball: Ball, pulls: readonly VacuumPull[]): VacuumPull | null {
+  let best: VacuumPull | null = null
+  let bestDist = VACUUM_RADIUS * VACUUM_RADIUS
+  for (const pull of pulls) {
+    if (!pull.types.has(ball.typeIndex)) continue
+    const dx = pull.x - ball.x
+    const dy = pull.y - ball.y
+    const dist = dx * dx + dy * dy
+    if (dist <= bestDist) {
+      best = pull
+      bestDist = dist
+    }
+  }
+  return best
+}
+
+function overlapsPointer(ball: Ball, pull: VacuumPull): boolean {
+  return Math.abs(ball.x - pull.x) <= VACUUM_CATCH_RADIUS && Math.abs(ball.y - pull.y) <= VACUUM_CATCH_RADIUS
+}
+
 /** Returns spilled when a ball has stayed outside the bin during an overflow. */
-export function stepBin(balls: Iterable<Ball>, fullness: number, leak: number, dt: number): boolean {
+export function stepBin(
+  balls: Iterable<Ball>,
+  fullness: number,
+  leak: number,
+  dt: number,
+  pulls: readonly VacuumPull[] = [],
+): { spilled: boolean; caught: VacuumCatch[] } {
   const binBalls: Ball[] = []
   for (const ball of balls) {
     if (ball.where === 'bin') binBalls.push(ball)
@@ -48,19 +91,23 @@ export function stepBin(balls: Iterable<Ball>, fullness: number, leak: number, d
   const top = BIN.y + BALL_RADIUS - leak
   const bottom = BIN.y + BIN.h - BALL_RADIUS + leak
 
+  const pulled = new Set<Ball>()
   for (const ball of binBalls) {
     const drag = Math.exp(-1.4 * dt)
     ball.vx *= drag
     ball.vy *= drag
+    const pull = nearestPull(ball, pulls)
+    if (pull) pulled.add(ball)
     ball.x += ball.vx * dt
     ball.y += ball.vy * dt
   }
 
+  const loose = binBalls.filter((ball) => !pulled.has(ball))
   for (let iter = 0; iter < 4; iter++) {
-    for (let i = 0; i < binBalls.length; i++) {
-      for (let j = i + 1; j < binBalls.length; j++) separate(binBalls[i], binBalls[j], rest)
+    for (let i = 0; i < loose.length; i++) {
+      for (let j = i + 1; j < loose.length; j++) separate(loose[i], loose[j], rest)
     }
-    for (const ball of binBalls) {
+    for (const ball of loose) {
       if (ball.x < left) {
         ball.x = left
         ball.vx = Math.abs(ball.vx) * 0.35
@@ -78,16 +125,35 @@ export function stepBin(balls: Iterable<Ball>, fullness: number, leak: number, d
     }
   }
 
+  const caught: VacuumCatch[] = []
+  for (const ball of pulled) {
+    const pull = nearestPull(ball, pulls)
+    if (!pull) continue
+    const dx = pull.x - ball.x
+    const dy = pull.y - ball.y
+    const dist = Math.hypot(dx, dy)
+    if (dist > 0.01) {
+      const step = Math.min(VACUUM_PULL_SPEED * dt, dist)
+      ball.x += (dx / dist) * step
+      ball.y += (dy / dist) * step
+    }
+    if (overlapsPointer(ball, pull)) {
+      caught.push({ id: ball.id, playerId: pull.playerId })
+      ball.vx = 0
+      ball.vy = 0
+    }
+  }
+
   if (hold) {
     for (const ball of binBalls) ball.outsideMs = 0
-    return false
+    return { spilled: false, caught }
   }
 
   let spilled = false
-  for (const ball of binBalls) {
+  for (const ball of loose) {
     const outside = ball.x < BIN.x || ball.x > BIN.x + BIN.w || ball.y > BIN.y + BIN.h
     ball.outsideMs = outside ? ball.outsideMs + dt * 1000 : 0
     if (ball.outsideMs > 1200) spilled = true
   }
-  return spilled
+  return { spilled, caught }
 }

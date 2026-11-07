@@ -32,7 +32,7 @@ export type Player = {
   bag: string[]
   bagSize: number
   vacuum: boolean
-  vacuumAt: number
+  vacuumAim: { x: number; y: number; at: number } | null
   toast: Toast | null
 }
 

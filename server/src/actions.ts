@@ -7,14 +7,13 @@ import {
   MAX_BAG,
   STARTING_BAG,
   OVERFLOW_LIMIT_MS,
+  VACUUM_AIM_MS,
   VACUUM_COST,
-  VACUUM_COOLDOWN_MS,
-  VACUUM_RADIUS,
   tierUnlockCost,
 } from '../../shared/data/balance.ts'
 import { BIN, SHELF_CAPACITY, SHELF_FRAMES, SHELF_INDEX_MAX } from '../../shared/data/layout.ts'
 import type { ClientMessage } from '../../shared/data/messages.ts'
-import { stepBin } from './physics.ts'
+import { stepBin, type VacuumPull } from './physics.ts'
 import type { Ball, Session, Shelf } from './session.ts'
 
 function toast(session: Session, text: string, playerId: string | null): void {
@@ -63,7 +62,7 @@ export function beginRun(session: Session): void {
     player.bag = []
     player.bagSize = STARTING_BAG
     player.vacuum = false
-    player.vacuumAt = 0
+    player.vacuumAim = null
     player.toast = null
   }
   session.unlockedTypes = []
@@ -167,7 +166,13 @@ export function tick(session: Session, dtMs: number): void {
   if (fullness > 1) session.overflowMs += dtMs
   else session.overflowMs = 0
   const leak = fullness <= 1 ? 0 : 8 + (session.overflowMs / OVERFLOW_LIMIT_MS) * 56
-  const spilled = stepBin(session.balls.values(), fullness, leak, dtMs / 1000)
+  const { spilled, caught } = stepBin(session.balls.values(), fullness, leak, dtMs / 1000, vacuumPulls(session))
+  for (const hit of caught) {
+    const ball = session.balls.get(hit.id)
+    const owner = session.players.get(hit.playerId)
+    if (!ball || !owner || owner.bag.length >= owner.bagSize) continue
+    takeIntoBag(session, hit.playerId, ball)
+  }
   if (spilled || session.overflowMs >= OVERFLOW_LIMIT_MS) {
     session.status = 'overflow'
     decayToasts(session, dtMs)
@@ -191,6 +196,27 @@ export function returnBag(session: Session, playerId: string): void {
     tossFromCenter(ball)
   }
   player.bag = []
+}
+
+function vacuumPulls(session: Session): VacuumPull[] {
+  const pulls: VacuumPull[] = []
+  for (const player of session.players.values()) {
+    const aim = player.vacuumAim
+    if (!player.vacuum || !aim) continue
+    if (session.sessionMs - aim.at > VACUUM_AIM_MS) {
+      player.vacuumAim = null
+      continue
+    }
+    if (player.bag.length === 0 || player.bag.length >= player.bagSize) continue
+    const types = new Set<number>()
+    for (const id of player.bag) {
+      const typeIndex = session.balls.get(id)?.typeIndex
+      if (typeIndex !== undefined) types.add(typeIndex)
+    }
+    if (types.size === 0) continue
+    pulls.push({ playerId: player.id, x: aim.x, y: aim.y, types })
+  }
+  return pulls
 }
 
 function takeIntoBag(session: Session, playerId: string, ball: Ball): boolean {
@@ -226,24 +252,11 @@ export function applyAction(session: Session, playerId: string, message: ClientM
   }
 
   if (message.type === 'vacuum') {
-    if (!player.vacuum || player.bag.length === 0) return
-    if (session.sessionMs - player.vacuumAt < VACUUM_COOLDOWN_MS) return
-    if (player.bag.length >= player.bagSize) return
-    player.vacuumAt = session.sessionMs
-    const held = new Set(player.bag.map((id) => session.balls.get(id)?.typeIndex))
-    let best: Ball | null = null
-    let bestDist = VACUUM_RADIUS * VACUUM_RADIUS
-    for (const ball of session.balls.values()) {
-      if (ball.where !== 'bin' || !held.has(ball.typeIndex)) continue
-      const dx = ball.x - message.x
-      const dy = ball.y - message.y
-      const dist = dx * dx + dy * dy
-      if (dist < bestDist) {
-        best = ball
-        bestDist = dist
-      }
+    if (!player.vacuum || player.bag.length === 0 || player.bag.length >= player.bagSize) {
+      player.vacuumAim = null
+      return
     }
-    if (best) takeIntoBag(session, playerId, best)
+    player.vacuumAim = { x: message.x, y: message.y, at: session.sessionMs }
     return
   }
 
@@ -298,7 +311,7 @@ export function applyAction(session: Session, playerId: string, message: ClientM
     }
     session.totalValue -= VACUUM_COST
     player.vacuum = true
-    toast(session, 'Vacuum online. Hold on matching balls.', playerId)
+    toast(session, 'Vacuum online. Hold to pull matching balls.', playerId)
     return
   }
 

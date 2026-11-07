@@ -1,7 +1,13 @@
 import { Container, Sprite, type Texture } from 'pixi.js'
+import { VACUUM_RADIUS, VACUUM_STREAM_BALLS } from '../../data/balance.ts'
 import type { BinBallSnapshot } from '../../data/messages.ts'
 
-type BallSprite = Sprite & { targetX: number; targetY: number }
+type BallSprite = Sprite & { targetX: number; targetY: number; typeIndex: number }
+
+export type VacuumTarget = {
+  x: number
+  y: number
+}
 
 export class BallLayer extends Container {
   private readonly sprites = new Map<string, BallSprite>()
@@ -24,10 +30,12 @@ export class BallLayer extends Container {
         sprite.roundPixels = true
         sprite.x = ball.x
         sprite.y = ball.y
+        sprite.typeIndex = ball.typeIndex
         this.sprites.set(ball.id, sprite)
         this.addChild(sprite)
       }
       sprite.texture = this.textures[ball.typeIndex] ?? this.textures[0]
+      sprite.typeIndex = ball.typeIndex
       sprite.targetX = ball.x
       sprite.targetY = ball.y
     }
@@ -52,6 +60,21 @@ export class BallLayer extends Container {
       }
       sprite.zIndex = sprite.y
     }
+  }
+
+  vacuumTargets(x: number, y: number, types: ReadonlySet<number>): VacuumTarget[] {
+    const reach = VACUUM_RADIUS * VACUUM_RADIUS
+    const found: { x: number; y: number; dist: number }[] = []
+    for (const sprite of this.sprites.values()) {
+      if (!types.has(sprite.typeIndex)) continue
+      const dx = sprite.x - x
+      const dy = sprite.y - y
+      const dist = dx * dx + dy * dy
+      if (dist > reach) continue
+      found.push({ x: sprite.x, y: sprite.y, dist })
+    }
+    found.sort((a, b) => a.dist - b.dist)
+    return found.slice(0, VACUUM_STREAM_BALLS)
   }
 
   ballAt(x: number, y: number): string | null {

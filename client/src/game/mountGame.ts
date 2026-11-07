@@ -35,11 +35,22 @@ export async function mountGame(root: HTMLElement): Promise<void> {
   )
 
   stage = await createStage(screen.stage, (dtMs) => {
-    if (!vacuumArmed || !snapshot?.you.vacuum || snapshot.status !== 'playing') return
-    holdMs += dtMs
-    if (holdMs < 130) return
-    holdMs = 0
-    send({ type: 'vacuum', x: pointer.x, y: pointer.y })
+    const you = snapshot?.you
+    const bagFull = !you || you.bag.length >= you.bagSize
+    const pulling = vacuumArmed && !!you?.vacuum && snapshot?.status === 'playing' && !bagFull && you.bag.length > 0
+    if (pulling) {
+      holdMs += dtMs
+      if (holdMs >= 50) {
+        holdMs = 0
+        send({ type: 'vacuum', x: pointer.x, y: pointer.y })
+      }
+    }
+    stage?.showVacuum({
+      active: pulling,
+      cursorX: pointer.x,
+      cursorY: pointer.y,
+      types: new Set(you?.bag.map((ball) => ball.typeIndex) ?? []),
+    })
   })
 
   const resize = () => stage?.resize(screen.stage.clientWidth, screen.stage.clientHeight)

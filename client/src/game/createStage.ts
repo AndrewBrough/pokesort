@@ -6,6 +6,14 @@ import { BinFullness } from './BinFullness/BinFullness.ts'
 import { drawMart } from './drawMart.ts'
 import { ShelfLayer } from './ShelfLayer/ShelfLayer.ts'
 import { loadBallTextures } from './textures.ts'
+import { VacuumStream } from './VacuumStream/VacuumStream.ts'
+
+export type VacuumAimProps = {
+  active: boolean
+  cursorX: number
+  cursorY: number
+  types: ReadonlySet<number>
+}
 
 export type StageHandle = {
   canvas: HTMLCanvasElement
@@ -13,6 +21,7 @@ export type StageHandle = {
   sync: (state: WorldSnapshot) => void
   ballAt: (x: number, y: number) => string | null
   shelfAt: (x: number, y: number) => number | null
+  showVacuum: (props: VacuumAimProps) => void
   worldFromEvent: (event: PointerEvent) => { x: number; y: number }
   destroy: () => void
 }
@@ -41,12 +50,14 @@ export async function createStage(
   drawMart(mart)
   const shelves = new ShelfLayer(textures)
   const balls = new BallLayer(textures)
+  const vacuum = new VacuumStream()
   const fullness = new BinFullness()
-  world.addChild(mart, shelves, balls, fullness)
+  world.addChild(mart, shelves, balls, vacuum, fullness)
   app.stage.addChild(world)
   app.ticker.add((ticker) => {
     balls.step(ticker.deltaMS)
     onTick(ticker.deltaMS)
+    vacuum.step(ticker.deltaMS)
   })
 
   const resize = (width: number, height: number) => {
@@ -80,6 +91,14 @@ export async function createStage(
     },
     ballAt: (x, y) => balls.ballAt(x, y),
     shelfAt: (x, y) => shelves.shelfAt(x, y),
+    showVacuum: (props) => {
+      vacuum.update({
+        active: props.active,
+        cursorX: props.cursorX,
+        cursorY: props.cursorY,
+        targets: props.active ? balls.vacuumTargets(props.cursorX, props.cursorY, props.types) : [],
+      })
+    },
     worldFromEvent,
     destroy: () => {
       app.destroy(true)
