@@ -1,0 +1,39 @@
+.game-screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #1c140e;
+  color: #f6e7c1;
+  user-select: none;
+}
+
+.game-screen__stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.game-screen__notice {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  z-index: 3;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.game-screen__over {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.game-screen__dock {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px 12px;
+  background: #1c140e;
+}

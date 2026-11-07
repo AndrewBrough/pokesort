@@ -1,0 +1,18 @@
+.upgrade-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.upgrade-bar__button {
+  background: #2a2118;
+  color: #f6e7c1;
+  border: 2px solid #f0d7a8;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.upgrade-bar__button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

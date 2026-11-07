@@ -1,0 +1,13 @@
+.notice-banner {
+  margin: 0;
+  padding: 8px 12px;
+  background: #f6e7c1;
+  color: #3b2412;
+  border: 2px solid #1c140e;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.notice-banner[data-visible='false'] {
+  display: none;
+}

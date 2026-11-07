@@ -1,0 +1,93 @@
+import { BALL_RADIUS } from '../../shared/data/balance.ts'
+import { BIN } from '../../shared/data/layout.ts'
+import type { Ball } from './session.ts'
+
+function separate(a: Ball, b: Ball, rest: number): void {
+  let dx = b.x - a.x
+  let dy = b.y - a.y
+  const distSq = dx * dx + dy * dy
+  const min = rest
+  if (distSq >= min * min) return
+  if (distSq < 0.01) {
+    const angle = Math.random() * Math.PI * 2
+    a.x -= Math.cos(angle) * 0.6
+    a.y -= Math.sin(angle) * 0.6
+    b.x += Math.cos(angle) * 0.6
+    b.y += Math.sin(angle) * 0.6
+    return
+  }
+  const dist = Math.sqrt(distSq)
+  const nx = dx / dist
+  const ny = dy / dist
+  const push = (min - dist) / 2
+  a.x -= nx * push
+  a.y -= ny * push
+  b.x += nx * push
+  b.y += ny * push
+  const rel = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny
+  if (rel < 0) {
+    const impulse = rel * 0.45
+    a.vx += nx * impulse
+    a.vy += ny * impulse
+    b.vx -= nx * impulse
+    b.vy -= ny * impulse
+  }
+}
+
+/** Returns spilled when a ball has stayed outside the bin during an overflow. */
+export function stepBin(balls: Iterable<Ball>, fullness: number, leak: number, dt: number): boolean {
+  const binBalls: Ball[] = []
+  for (const ball of balls) {
+    if (ball.where === 'bin') binBalls.push(ball)
+  }
+  const hold = fullness <= 1
+  const tightness = hold ? 1 - 0.5 * Math.max(0, fullness) : 0.4
+  const rest = BALL_RADIUS * 2 * tightness
+  const left = BIN.x + BALL_RADIUS - leak
+  const right = BIN.x + BIN.w - BALL_RADIUS + leak
+  const top = BIN.y + BALL_RADIUS - leak
+  const bottom = BIN.y + BIN.h - BALL_RADIUS + leak
+
+  for (const ball of binBalls) {
+    const drag = Math.exp(-1.4 * dt)
+    ball.vx *= drag
+    ball.vy *= drag
+    ball.x += ball.vx * dt
+    ball.y += ball.vy * dt
+  }
+
+  for (let iter = 0; iter < 4; iter++) {
+    for (let i = 0; i < binBalls.length; i++) {
+      for (let j = i + 1; j < binBalls.length; j++) separate(binBalls[i], binBalls[j], rest)
+    }
+    for (const ball of binBalls) {
+      if (ball.x < left) {
+        ball.x = left
+        ball.vx = Math.abs(ball.vx) * 0.35
+      } else if (ball.x > right) {
+        ball.x = right
+        ball.vx = -Math.abs(ball.vx) * 0.35
+      }
+      if (ball.y < top) {
+        ball.y = top
+        ball.vy = Math.abs(ball.vy) * 0.35
+      } else if (ball.y > bottom) {
+        ball.y = bottom
+        ball.vy = -Math.abs(ball.vy) * 0.35
+      }
+    }
+  }
+
+  if (hold) {
+    for (const ball of binBalls) ball.outsideMs = 0
+    return false
+  }
+
+  let spilled = false
+  for (const ball of binBalls) {
+    const outside = ball.x < BIN.x || ball.x > BIN.x + BIN.w || ball.y > BIN.y + BIN.h
+    ball.outsideMs = outside ? ball.outsideMs + dt * 1000 : 0
+    if (ball.outsideMs > 1200) spilled = true
+  }
+  return spilled
+}

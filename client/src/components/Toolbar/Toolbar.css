@@ -1,0 +1,74 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 52px;
+  padding: 8px 14px;
+  background: #3b2412;
+  color: #f6e7c1;
+  box-sizing: border-box;
+}
+
+.toolbar__value,
+.toolbar__fullness,
+.toolbar__batch,
+.toolbar__players,
+.toolbar__clock {
+  margin: 0;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.toolbar__value {
+  font-size: 20px;
+  font-weight: 700;
+  min-width: 7ch;
+}
+
+.toolbar__meter {
+  width: 112px;
+  height: 12px;
+  flex: 0 0 auto;
+  background: #1c140e;
+  border: 2px solid #1c140e;
+}
+
+.toolbar__fill {
+  height: 100%;
+  width: 0;
+  background: #7dce5a;
+}
+
+.toolbar__meter[data-state='high'] .toolbar__fill {
+  background: #e0a030;
+}
+
+.toolbar__meter[data-state='overflow'] .toolbar__fill {
+  background: #d64545;
+}
+
+.toolbar__meter[data-state='overflow'] + .toolbar__fullness {
+  color: #ffb4a8;
+}
+
+.toolbar__spacer {
+  flex: 1;
+}
+
+.toolbar__drop {
+  background: #f0d7a8;
+  color: #3b2412;
+  border: 2px solid #1c140e;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.toolbar__drop:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.toolbar__clock {
+  font-weight: 700;
+}

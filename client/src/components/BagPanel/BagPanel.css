@@ -1,0 +1,49 @@
+.bag-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  color: #f6e7c1;
+}
+
+.bag-panel__title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.bag-panel__slots {
+  display: flex;
+  gap: 8px;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.bag-panel__slot {
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: #2a2118;
+  color: #8c7760;
+  border: 2px solid #f0d7a8;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.bag-panel__slot:disabled {
+  cursor: default;
+  border-style: dashed;
+  opacity: 0.8;
+}
+
+.bag-panel__sprite {
+  width: 32px;
+  height: 32px;
+  background-image: url('/pokeballs_emerald.png');
+  background-size: 128px 128px;
+  image-rendering: pixelated;
+}
