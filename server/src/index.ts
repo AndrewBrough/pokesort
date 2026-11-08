@@ -3,7 +3,7 @@ import { stat } from 'node:fs/promises'
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { extname, join, normalize, resolve } from 'node:path'
 import { WebSocketServer, type RawData, type WebSocket } from 'ws'
-import { SIM_STEP_MS, SNAPSHOT_EVERY_STEPS, STARTING_BAG } from '../../shared/data/balance.ts'
+import { IDLE_PAUSE_MS, SIM_STEP_MS, SNAPSHOT_EVERY_STEPS, STARTING_BAG } from '../../shared/data/balance.ts'
 import type { ClientMessage } from '../../shared/data/messages.ts'
 import { applyAction, beginRun, rememberClient, returnBag, tick } from './actions.ts'
 import { createSession, type ClientUpgrades, type Session } from './session.ts'
@@ -122,6 +122,7 @@ export function startServer(): void {
   const sentBins = new Map<WebSocket, Map<string, SentBinBall>>()
   let timer: ReturnType<typeof setInterval> | null = null
   let steps = 0
+  let lastActivityAt = 0
 
   const stopLoop = () => {
     if (!timer) return
@@ -130,9 +131,18 @@ export function startServer(): void {
     steps = 0
   }
 
+  const noteActivity = () => {
+    lastActivityAt = Date.now()
+  }
+
   const ensureLoop = () => {
     if (timer || session.players.size === 0) return
     timer = setInterval(() => {
+      const idle = Date.now() - lastActivityAt >= IDLE_PAUSE_MS
+      if (session.players.size === 0 || idle) {
+        stopLoop()
+        return
+      }
       tick(session, SIM_STEP_MS)
       steps += 1
       if (steps >= SNAPSHOT_EVERY_STEPS) {
@@ -186,11 +196,14 @@ export function startServer(): void {
     sentBins.set(socket, sentBin)
     send(socket, { type: 'welcome', playerId: id })
     send(socket, { type: 'state', state: snapshotFor(session, id, sentBin) })
+    noteActivity()
     ensureLoop()
 
     socket.on('message', (data) => {
       const message = parseMessage(data)
       if (!message) return
+      noteActivity()
+      ensureLoop()
       applyAction(session, id, message)
       // Aims and cursors are folded into the 10 Hz snapshot. A full copy per packet
       // was most of the bandwidth while someone held the vacuum.

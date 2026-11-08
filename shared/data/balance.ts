@@ -4,6 +4,8 @@ export const BIN_CAPACITY = 2500
 export const OVERFLOW_LIMIT_MS = 3000
 export const SIM_STEP_MS = 50
 export const SNAPSHOT_EVERY_STEPS = 2
+/** Stop the sim after every connected player has been quiet this long. */
+export const IDLE_PAUSE_MS = 60_000
 export const BALL_RADIUS = BALL_ART.size / 1.75
 /** Size and strength each stop here until more levels are added. */
 export const VACUUM_LEVELS = 10
